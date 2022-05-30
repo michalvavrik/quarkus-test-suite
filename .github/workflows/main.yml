@@ -14,7 +14,7 @@ jobs:
       - id: detect-changes
         run: |
           CHANGED=""
-          MODULES_ARG="http,smth,etc"
+          MODULES_ARG="http,smth,etc,http-advanced-reactive"
           echo "::set-output name=MODULES_ARG::${MODULES_ARG}"
           
           BUILD_TIME_PROPERTIES=''
