@@ -13,7 +13,7 @@ jobs:
         continue-on-error: true
       - id: detect-changes
         run: |
-          CHANGED=""
+          CHANGED="blabla"
           MODULES_ARG="http,smth,etc,http-advanced-reactive"
           echo "::set-output name=MODULES_ARG::${MODULES_ARG}"
           
