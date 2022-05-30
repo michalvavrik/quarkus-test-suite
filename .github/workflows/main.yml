@@ -18,7 +18,8 @@ jobs:
           echo "::set-output name=MODULES_ARG::${MODULES_ARG}"
           
           BUILD_TIME_PROPERTIES=''
-          if [[ $CHANGED =~ "http-advanced-reactive" ]]; then
+          # If changes include http-advanced-reactive module or all module
+          if [[ $CHANGED =~ "http-advanced-reactive" ]] || [ -z "$CHANGED" ]; then
               # Enable test HttpAdvancedReactiveIT#uriPathTemplate
               BUILD_TIME_PROPERTIES='-Dquarkus-platform-version-2.8.3-or-higher="true"';
           fi
