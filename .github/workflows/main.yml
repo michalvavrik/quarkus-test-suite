@@ -22,7 +22,7 @@ jobs:
               # Enable test HttpAdvancedReactiveIT#uriPathTemplate
               BUILD_TIME_PROPERTIES='-Dquarkus-platform-version-2.8.3-or-higher=true';
           fi
-          echo "::set-output name=BUILD_TIME_PROPERTIES::${BUILD_TIME_PROPERTIES}"
+          echo "::set-output name=BUILD_TIME_PROPERTIES::'${BUILD_TIME_PROPERTIES}'"
     outputs:
       MODULES_ARG: ${{ steps.detect-changes.outputs.MODULES_ARG }}
       BUILD_TIME_PROPERTIES: ${{ steps.detect-changes.outputs.BUILD_TIME_PROPERTIES }}
