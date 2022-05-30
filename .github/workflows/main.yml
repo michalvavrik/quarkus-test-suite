@@ -1,0 +1,50 @@
+name: "Test OUTPUT PROPS"
+on:
+  - pull_request
+jobs:
+  detect-test-suite-modules:
+    name: Detect Modules in PR
+    runs-on: ubuntu-latest
+    needs: [ ]
+    steps:
+      - uses: actions/checkout@v2
+      - id: files
+        uses: jitterbit/get-changed-files@v1
+        continue-on-error: true
+      - id: detect-changes
+        run: |
+          CHANGED=""
+          MODULES_ARG="http,smth,etc"
+          echo "::set-output name=MODULES_ARG::${MODULES_ARG}"
+          
+          BUILD_TIME_PROPERTIES=''
+          if [[ $CHANGED =~ "http-advanced-reactive" ]]; then
+              # Enable test HttpAdvancedReactiveIT#uriPathTemplate
+              BUILD_TIME_PROPERTIES='-Dquarkus-platform-version-2.8.3-or-higher="true"';
+          fi
+          echo "::set-output name=BUILD_TIME_PROPERTIES::${BUILD_TIME_PROPERTIES}"
+    outputs:
+      MODULES_ARG: ${{ steps.detect-changes.outputs.MODULES_ARG }}
+      BUILD_TIME_PROPERTIES: ${{ steps.detect-changes.outputs.BUILD_TIME_PROPERTIES }}
+  linux-build-jvm-latest:
+    name: PR - Linux - JVM build - Latest Version
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    needs: detect-test-suite-modules
+    env:
+      MODULES_ARG: ${{ needs.detect-test-suite-modules.outputs.MODULES_ARG }}
+      BUILD_TIME_PROPERTIES: ${{ needs.detect-test-suite-modules.outputs.BUILD_TIME_PROPERTIES }}
+    strategy:
+      matrix:
+        java: [ 11 ]
+    steps:
+      - name: Build with Maven
+        run: |
+          MODULES_MAVEN_PARAM=""
+          if [[ -n ${MODULES_ARG} ]]; then
+            echo "Running modules: ${MODULES_ARG}"
+            MODULES_MAVEN_PARAM="-pl ${MODULES_ARG}"
+          fi
+
+          echo $MODULES_MAVEN_PARAM 
+          echo "BUILD TIME PROPS ${BUILD_TIME_PROPERTIES}"
