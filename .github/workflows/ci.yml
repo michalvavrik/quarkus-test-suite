@@ -79,8 +79,17 @@ jobs:
 
           MODULES_ARG="${CHANGED// /,}"
           echo "::set-output name=MODULES_ARG::${MODULES_ARG}"
+          
+          BUILD_PROPERTIES=''
+          # If changes include http-advanced-reactive module or no module is specified (and so, all modules are run)
+          if [[ $CHANGED =~ "http-advanced-reactive" ]] || [ -z "$CHANGED" ]; then
+              # Enable test HttpAdvancedReactiveIT#uriPathTemplate
+              BUILD_PROPERTIES='-Dquarkus-platform-version-2.8.3-or-higher="true"';
+          fi
+          echo "::set-output name=BUILD_PROPERTIES::${BUILD_PROPERTIES}"
     outputs:
       MODULES_ARG: ${{ steps.detect-changes.outputs.MODULES_ARG }}
+      BUILD_PROPERTIES: ${{ steps.detect-changes.outputs.BUILD_PROPERTIES }}
   linux-build-jvm-latest:
     name: PR - Linux - JVM build - Latest Version
     runs-on: ubuntu-latest
@@ -88,6 +97,7 @@ jobs:
     needs: detect-test-suite-modules
     env:
       MODULES_ARG: ${{ needs.detect-test-suite-modules.outputs.MODULES_ARG }}
+      BUILD_PROPERTIES: ${{ needs.detect-test-suite-modules.outputs.BUILD_PROPERTIES }}
     strategy:
       matrix:
         java: [ 11 ]
@@ -126,7 +136,8 @@ jobs:
             MODULES_MAVEN_PARAM="-pl ${MODULES_ARG}"
           fi
 
-          mvn -fae -V -B -s .github/mvn-settings.xml clean verify -Dall-modules -Dinclude.quarkus-cli-tests -Dts.quarkus.cli.cmd="${PWD}/quarkus-dev-cli" $MODULES_MAVEN_PARAM -am
+          mvn -fae -V -B -s .github/mvn-settings.xml clean verify $BUILD_PROPERTIES -Dall-modules -Dinclude.quarkus-cli-tests \
+          -Dts.quarkus.cli.cmd="${PWD}/quarkus-dev-cli" $MODULES_MAVEN_PARAM -am
       - name: Zip Artifacts
         if: failure()
         run: |
@@ -142,6 +153,7 @@ jobs:
     needs: detect-test-suite-modules
     env:
       MODULES_ARG: ${{ needs.detect-test-suite-modules.outputs.MODULES_ARG }}
+      BUILD_PROPERTIES: ${{ needs.detect-test-suite-modules.outputs.BUILD_PROPERTIES }}
     strategy:
       matrix:
         java: [ 11 ]
@@ -176,7 +188,7 @@ jobs:
         run: |
           if [[ -n ${MODULES_ARG} ]]; then
             echo "Running modules: ${MODULES_ARG}"
-            mvn -fae -V -B -s .github/mvn-settings.xml -fae -Dall-modules -Dquarkus.container-image.build=false \
+            mvn -fae -V -B -s .github/mvn-settings.xml -fae $BUILD_PROPERTIES -Dall-modules -Dquarkus.container-image.build=false \
                         -Dinclude.quarkus-cli-tests -Dts.quarkus.cli.cmd="${PWD}/quarkus-dev-cli" \
                         -pl $MODULES_ARG clean verify -Dnative -am
           fi

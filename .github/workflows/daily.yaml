@@ -69,7 +69,8 @@ jobs:
           chmod +x ./quarkus-dev-cli
       - name: Test in JVM mode
         run: |
-          mvn -fae -V -B -s .github/mvn-settings.xml -fae clean verify -P ${{ matrix.profiles }} -Dinclude.quarkus-cli-tests -Dts.quarkus.cli.cmd="${PWD}/quarkus-dev-cli"
+          mvn -fae -V -B -s .github/mvn-settings.xml -fae clean verify -P ${{ matrix.profiles }} -Dinclude.quarkus-cli-tests \
+          -Dts.quarkus.cli.cmd="${PWD}/quarkus-dev-cli" -Dquarkus-platform-version-2.8.3-or-higher="true"
       - name: Zip Artifacts
         if: failure()
         run: |
@@ -123,7 +124,8 @@ jobs:
         run: |
           mvn -fae -V -B -s .github/mvn-settings.xml -P ${{ matrix.profiles }} -fae clean verify -Dnative \
             -Dquarkus.native.builder-image=quay.io/quarkus/${{ matrix.image }} \
-            -Dinclude.quarkus-cli-tests -Dts.quarkus.cli.cmd="${PWD}/quarkus-dev-cli"
+            -Dinclude.quarkus-cli-tests -Dts.quarkus.cli.cmd="${PWD}/quarkus-dev-cli" \
+            -Dquarkus-platform-version-2.8.3-or-higher="true"
       - name: Zip Artifacts
         if: failure()
         run: |
