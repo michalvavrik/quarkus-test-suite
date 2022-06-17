@@ -611,9 +611,7 @@
                 profile! -->
             <id>openshift</id>
             <activation>
-                <property>
-                    <name>openshift</name>
-                </property>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
                 <include.tests>**/*OpenShift*IT.java</include.tests>
@@ -623,9 +621,7 @@
         <profile>
             <id>redhat-registry</id>
             <activation>
-                <property>
-                    <name>openshift</name>
-                </property>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <build>
                 <plugins>
@@ -652,9 +648,7 @@
         <profile>
             <id>serverless</id>
             <activation>
-                <property>
-                    <name>include.serverless</name>
-                </property>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
                 <exclude.serverless.openshift.tests>no</exclude.serverless.openshift.tests>
@@ -663,9 +657,7 @@
         <profile>
             <id>operator-scenarios</id>
             <activation>
-                <property>
-                    <name>include.operator-scenarios</name>
-                </property>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
                 <exclude.operator.openshift.tests>no</exclude.operator.openshift.tests>
