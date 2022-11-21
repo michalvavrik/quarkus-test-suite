@@ -55,7 +55,7 @@ public class ServerlessExtensionOpenShiftFunqyKnEventsIT {
                     openShiftClient
                             .getKnClient()
                             .pingSources()
-                            .resource(new PingSourceBuilder()
+                            .create(new PingSourceBuilder()
                                     .withNewMetadata().withName("test-ping-source").endMetadata()
                                     .withNewSpec()
                                     .withDataBase64(IN_AS_BASE_64)
@@ -68,8 +68,7 @@ public class ServerlessExtensionOpenShiftFunqyKnEventsIT {
                                     .endRef()
                                     .endSink()
                                     .endSpec()
-                                    .build())
-                            .create();
+                                    .build());
                 }
             })
             .withDefaultBroker()
