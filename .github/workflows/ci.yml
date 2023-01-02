@@ -2,63 +2,9 @@ name: "Pull Request CI"
 on:
   - pull_request
 jobs:
-  build-dependencies:
-    name: Build Dependencies
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: [ 11 ]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Reclaim Disk Space
-        run: .github/ci-prerequisites.sh
-      - name: Install JDK {{ matrix.java }}
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: ${{ matrix.java }}
-          check-latest: true
-      - name: Build Quarkus main
-        run: |
-          git clone https://github.com/quarkusio/quarkus.git && cd quarkus && ./mvnw -B -s .github/mvn-settings.xml clean install -Dquickly -Prelocations
-      - name: Tar Maven Repo
-        shell: bash
-        run: tar -I 'pigz -9' -cf maven-repo.tgz -C ~ .m2/repository
-      - name: Persist Maven Repo
-        uses: actions/upload-artifact@v3
-        with:
-          name: maven-repo
-          path: maven-repo.tgz
-  linux-validate-format:
-    name: Linux - Validate format
-    runs-on: ubuntu-latest
-    needs: build-dependencies
-    strategy:
-      matrix:
-        java: [ 11 ]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install JDK {{ matrix.java }}
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: ${{ matrix.java }}
-          check-latest: true
-      - name: Download Maven Repo
-        uses: actions/download-artifact@v3
-        with:
-          name: maven-repo
-          path: .
-      - name: Extract Maven Repo
-        shell: bash
-        run: tar -xzf maven-repo.tgz -C ~
-      - name: Build with Maven
-        run: |
-          mvn -V -B -s .github/mvn-settings.xml verify -Dall-modules -Dvalidate-format -DskipTests -DskipITs -Dquarkus.container-image.build=false -Dquarkus.container-image.push=false
   detect-test-suite-modules:
     name: Detect Modules in PR
     runs-on: ubuntu-latest
-    needs: [ build-dependencies, linux-validate-format ]
     steps:
       - uses: actions/checkout@v3
       - id: files
@@ -93,31 +39,6 @@ jobs:
         java: [ 11 ]
     steps:
       - uses: actions/checkout@v3
-      - name: Reclaim Disk Space
-        run: .github/ci-prerequisites.sh
-      - name: Install JDK {{ matrix.java }}
-        # Uses sha for added security since tags can be updated
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: ${{ matrix.java }}
-          check-latest: true
-          cache: 'maven'
-      - name: Download Maven Repo
-        uses: actions/download-artifact@v3
-        with:
-          name: maven-repo
-          path: .
-      - name: Extract Maven Repo
-        shell: bash
-        run: tar -xzf maven-repo.tgz -C ~
-      - name: Install Quarkus CLI
-        run: |
-          cat <<EOF > ./quarkus-dev-cli
-          #!/bin/bash
-          java -jar ~/.m2/repository/io/quarkus/quarkus-cli/999-SNAPSHOT/quarkus-cli-999-SNAPSHOT-runner.jar "\$@"
-          EOF
-          chmod +x ./quarkus-dev-cli
       - name: Build with Maven
         run: |
           MODULES_MAVEN_PARAM=""
