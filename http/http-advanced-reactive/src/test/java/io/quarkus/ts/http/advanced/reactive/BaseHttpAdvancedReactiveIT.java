@@ -68,6 +68,7 @@ import io.quarkus.test.scenarios.annotations.EnabledOnQuarkusVersion;
 import io.quarkus.ts.http.advanced.reactive.clients.HttpVersionClientService;
 import io.quarkus.ts.http.advanced.reactive.clients.HttpVersionClientServiceAsync;
 import io.quarkus.ts.http.advanced.reactive.clients.RestClientServiceBuilder;
+import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.Header;
 import io.restassured.response.ValidatableResponse;
 import io.smallrye.mutiny.Uni;
@@ -105,6 +106,15 @@ public abstract class BaseHttpAdvancedReactiveIT {
     @DisplayName("GRPC Server test")
     public void testGrpc() {
         getApp().given().when().get("/api/grpc/trinity").then().statusCode(SC_OK).body(is("Hello trinity"));
+    }
+
+    @Test
+    @DisplayName("GRPC Server test")
+    public void testGrpcReflection() {
+        getApp().given()
+                .log().all().filter(new ResponseLoggingFilter())
+                .when()
+                .get("/api/grpc/reflection").then().statusCode(SC_OK).body(is("Hello trinity"));
     }
 
     @Test
