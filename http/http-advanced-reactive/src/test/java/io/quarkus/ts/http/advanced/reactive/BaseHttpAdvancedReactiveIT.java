@@ -65,7 +65,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.InvalidProtocolBufferException;
 
+import io.grpc.reflection.v1.FileDescriptorResponse;
 import io.quarkus.example.GreeterGrpc;
 import io.quarkus.example.HelloWorldProto;
 import io.quarkus.example.StreamingGrpc;
@@ -113,6 +115,20 @@ public abstract class BaseHttpAdvancedReactiveIT {
     @DisplayName("GRPC Server test")
     public void testGrpc() {
         getApp().given().when().get("/api/grpc/trinity").then().statusCode(SC_OK).body(is("Hello trinity"));
+    }
+
+    @Test
+    @DisplayName("GRPC reflection test - service count")
+    public void testR() throws InvalidProtocolBufferException {
+
+        var smth = getApp().given().when().get("/api/grpc/reflection/something")
+                .then().statusCode(SC_OK).extract().body().asByteArray();
+        var actual = FileDescriptorResponse.parseFrom(smth);
+
+        var expected = FileDescriptorResponse.newBuilder()
+                .addFileDescriptorProto(HelloWorldProto.getDescriptor().toProto().toByteString()).build();
+        Assertions.assertEquals(expected, actual);
+        System.out.println("neco " + actual);
     }
 
     @Test

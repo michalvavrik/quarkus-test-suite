@@ -51,6 +51,18 @@ public class GrpcResource {
     }
 
     @GET
+    @Path("reflection/something")
+    @Produces(MediaType.APPLICATION_JSON)
+    public byte[] something() {
+        ServerReflectionRequest request = ServerReflectionRequest.newBuilder()
+                .setHost("localhost").setFileByFilename("helloworld.proto").build();
+
+        var desc = invoke(request);
+        GrpcReflectionResponse response = new GrpcReflectionResponse(invoke(request));
+        return desc.getFileDescriptorResponse().toByteArray();
+    }
+
+    @GET
     @Path("reflection/service/description")
     @Produces(MediaType.TEXT_PLAIN)
     public String serviceMethods() {
