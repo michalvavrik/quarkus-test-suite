@@ -31,13 +31,8 @@ import io.vertx.ext.web.codec.BodyCodec;
 @DisabledIfSystemProperty(named = "profile.id", matches = "native", disabledReason = "Only for JVM mode, error in native mode - https://github.com/quarkusio/quarkus/issues/25928")
 public class DomainSocketIT {
 
-    @QuarkusApplication
-    static RestService app = new RestService()
-            .withProperty("quarkus.oidc.enabled", "false")
-            .withProperty("quarkus.http.host-enabled", "false")
-            .withProperty("quarkus.http.domain-socket", "/tmp/io.quarkus.app.socket")
-            .withProperty("quarkus.http.domain-socket-enabled", "true")
-            .withProperty("quarkus.vertx.prefer-native-transport", "true");
+    @QuarkusApplication(classes = { HelloResource.class, LocalCustomContext.class, Hello.class })
+    static RestService app = new RestService();
 
     @Test
     public void ensureApplicationStartsWithDomainSocketConfigured() {
