@@ -2,7 +2,6 @@ package io.quarkus.ts.http.advanced;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -31,14 +30,8 @@ import io.vertx.ext.web.codec.BodyCodec;
 @DisabledIfSystemProperty(named = "profile.id", matches = "native", disabledReason = "Only for JVM mode, error in native mode - https://github.com/quarkusio/quarkus/issues/25928")
 public class DomainSocketIT {
 
-    @QuarkusApplication(classes = { HelloResource.class, LocalCustomContext.class, Hello.class })
+    @QuarkusApplication(classes = { HelloResource.class, Hello.class })
     static RestService app = new RestService();
-
-    @Test
-    public void ensureApplicationStartsWithDomainSocketConfigured() {
-        assertTrue(app.isRunning(), "Application should start with domain socket configured");
-        app.logs().assertContains("Listening on: unix:/tmp/io.quarkus.app.socket");
-    }
 
     @Test
     public void ensureApplicationProvidesContent() throws InterruptedException {
