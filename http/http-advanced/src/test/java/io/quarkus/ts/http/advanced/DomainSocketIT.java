@@ -6,15 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
-import org.junit.jupiter.api.condition.DisabledOnOs;
-import org.junit.jupiter.api.condition.OS;
 
-import io.quarkus.test.bootstrap.RestService;
-import io.quarkus.test.scenarios.QuarkusScenario;
-import io.quarkus.test.services.QuarkusApplication;
+import io.quarkus.test.junit.QuarkusTest;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpMethod;
@@ -24,17 +18,11 @@ import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
 
-@QuarkusScenario
-@Tag("https://github.com/quarkusio/quarkus/issues/24739")
-@DisabledOnOs(value = OS.WINDOWS, disabledReason = "Netty Native Transport not supported on Windows, see https://quarkus.io/guides/vertx-reference#native-transport")
-@DisabledIfSystemProperty(named = "profile.id", matches = "native", disabledReason = "Only for JVM mode, error in native mode - https://github.com/quarkusio/quarkus/issues/25928")
+@QuarkusTest
 public class DomainSocketIT {
 
-    @QuarkusApplication(classes = { HelloResource.class, Hello.class })
-    static RestService app = new RestService();
-
     @Test
-    public void ensureApplicationProvidesContent() throws InterruptedException {
+    public void ensureApplicationProvidesContent() {
         Vertx vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(true));
         WebClient client = WebClient.create(vertx, new WebClientOptions().setFollowRedirects(false));
         SocketAddress serverAddress = SocketAddress.domainSocketAddress("/tmp/io.quarkus.app.socket");
