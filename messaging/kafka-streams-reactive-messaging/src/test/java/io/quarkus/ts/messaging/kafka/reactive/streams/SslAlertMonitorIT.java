@@ -24,6 +24,7 @@ public class SslAlertMonitorIT extends BaseKafkaStreamTest {
             .withProperty("kafka.security.protocol", "SSL")
             .withProperty("kafka.ssl.truststore.location", TRUSTSTORE_FILE)
             .withProperty("kafka.ssl.truststore.password", "top-secret")
+            .withProperty("kafka.ssl-engine-factory-class", "org.apache.kafka.common.security.auth.SslEngineFactory")
             .withProperty("kafka.ssl.truststore.type", "PKCS12");
 
     @Override
