@@ -32,7 +32,7 @@ public class InfinispanKafkaIT {
     private static final String BOOK_TITLE = "testBook";
     private static final Book BOOK = new Book(BOOK_TITLE, "description", 2011);
 
-    @Container(image = "${infinispan.image}", expectedLog = "${infinispan.expected-log}", port = 11222, command = "-c /infinispan-config.xml")
+    @Container(image = "${infinispan.image}", expectedLog = "${infinispan.expected-log}", port = 11222, command = "-c /infinispan-config.xml -Dorg.infinispan.openssl=false")
     static final InfinispanService infinispan = new InfinispanService()
             .withConfigFile("infinispan-config.xml")
             .withSecretFiles("keystore.jks");
