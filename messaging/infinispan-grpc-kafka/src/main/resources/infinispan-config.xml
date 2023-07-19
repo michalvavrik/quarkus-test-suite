@@ -31,7 +31,7 @@
                 <security-realm name="default">
                     <server-identities>
                         <ssl>
-                            <keystore path="/keystore.jks" password="password" alias="1" generate-self-signed-certificate-host="localhost"/>
+                            <keystore provider="SunPKCS11-NSS-FIPS" type="PKCS11"/>
                         </ssl>
                     </server-identities>
                     <properties-realm groups-attribute="Roles">
