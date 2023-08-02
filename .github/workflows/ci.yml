@@ -20,10 +20,11 @@ jobs:
           do
             if [[ "${{ steps.files.outputs.all_changed_and_modified_files }}" =~ ("$module") ]] ; then
                 CHANGED=$(echo $CHANGED" "$module)
+                # trim leading spaces
+                CHANGED="$(echo $CHANGED | xargs)"
                 echo "changed in if is $CHANGED"
             fi
           done
-
           MODULES_ARG="${CHANGED// /,}"
           echo "modules arg are $MODULES_ARG"
           echo "MODULES_ARG=$MODULES_ARG" >> $GITHUB_OUTPUT
