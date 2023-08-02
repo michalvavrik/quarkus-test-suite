@@ -32,14 +32,16 @@ public class TransferTopUpService extends TransferProcessor {
                     transactionsAmount--;
                     return TransactionExceptionResult.ROLLBACK;
                 })
-                .call(() -> {
-                    transactionsAmount++;
-                    JournalEntity journalentity = journalService.addToJournal(from, to, ANNOTATION_TOP_UP, amount);
-                    accountService.increaseBalance(from, amount);
-                    return journalentity;
-                });
+                .call(() -> addToJournal(from, to, amount));
         LOG.infof("TopUp completed account %s", from);
         return journal;
+    }
+
+    JournalEntity addToJournal(String from, String to, int amount) {
+        transactionsAmount++;
+        JournalEntity journalentity = journalService.addToJournal(from, to, ANNOTATION_TOP_UP, amount);
+        accountService.increaseBalance(from, amount);
+        return journalentity;
     }
 
     public long getTransactionsAmount() {

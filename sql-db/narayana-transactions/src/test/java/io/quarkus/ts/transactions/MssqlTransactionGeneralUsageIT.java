@@ -29,4 +29,9 @@ public class MssqlTransactionGeneralUsageIT extends TransactionCommons {
     protected String[] getExpectedJdbcOperationNames() {
         return new String[] { "SELECT msdb.account", "INSERT msdb.journal", "UPDATE msdb.account" };
     }
+
+    @Override
+    protected RestService getApp() {
+        return app;
+    }
 }

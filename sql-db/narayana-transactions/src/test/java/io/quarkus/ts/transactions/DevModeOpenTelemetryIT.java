@@ -4,6 +4,7 @@ import static io.quarkus.test.utils.AwaitilityUtils.untilAsserted;
 import static io.quarkus.test.utils.AwaitilityUtils.untilIsNotNull;
 import static io.quarkus.test.utils.AwaitilityUtils.AwaitilitySettings.using;
 import static io.quarkus.ts.transactions.TransactionCommons.getTracedOperationsForName;
+import static io.quarkus.ts.transactions.TransactionCommons.makeTopUpTransfer;
 import static io.quarkus.ts.transactions.TransactionCommons.retrieveTraces;
 import static io.quarkus.ts.transactions.TransactionCommons.verifyRequestTraces;
 import static io.restassured.RestAssured.given;
@@ -52,14 +53,14 @@ public class DevModeOpenTelemetryIT {
 
         // disable JDBC tracing and expect no traces are recorded
         app.modifyFile(APPLICATION_PROPERTIES, props -> props + System.lineSeparator() + getOtelEnabledProperty(false));
-        untilAsserted(TransactionCommons::makeTopUpTransfer);
+        untilAsserted(() -> makeTopUpTransfer(app));
         verifyNoTracesForOperation(INSERT_OPERATION_NAME);
         verifyNoTracesForOperation(UPDATE_OPERATION_NAME);
 
         // enable JDBC tracing and expect new traces
         app.modifyFile(APPLICATION_PROPERTIES, props -> props.replace(
                 getOtelEnabledProperty(false), getOtelEnabledProperty(true)));
-        untilAsserted(TransactionCommons::makeTopUpTransfer);
+        untilAsserted(() -> makeTopUpTransfer(app));
         verifyRequestTraces(INSERT_OPERATION_NAME, jaeger);
         verifyRequestTraces(UPDATE_OPERATION_NAME, jaeger);
     }
@@ -92,7 +93,9 @@ public class DevModeOpenTelemetryIT {
     }
 
     private static String retrieveTraceIdForSpanOperation() {
-        return retrieveTraces(20, "1h", "narayanaTransactions", "GET /span", jaeger).jsonPath().getString("data[0].traceID");
+        return retrieveTraces(20, "1h", "narayanaTransactions", "GET /span", jaeger)
+                .jsonPath()
+                .getString("data[0].traceID");
     }
 
     private static String getOtelEnabledProperty(boolean enabled) {

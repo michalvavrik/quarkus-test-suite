@@ -25,4 +25,9 @@ public class MariaDbTransactionGeneralUsageIT extends TransactionCommons {
             .withProperty("quarkus.datasource.username", database.getUser())
             .withProperty("quarkus.datasource.password", database.getPassword())
             .withProperty("quarkus.datasource.jdbc.url", database::getJdbcUrl);
+
+    @Override
+    protected RestService getApp() {
+        return app;
+    }
 }
