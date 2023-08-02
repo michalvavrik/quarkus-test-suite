@@ -15,6 +15,7 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-funqy-knative-events</artifactId>
         </dependency>
+        <!-- whatever -->
         <dependency>
             <groupId>io.quarkus.qe</groupId>
             <artifactId>quarkus-test-knative-events-spi</artifactId>

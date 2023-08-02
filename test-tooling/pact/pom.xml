@@ -16,6 +16,7 @@
             <artifactId>quarkus-pact-provider</artifactId>
             <scope>test</scope>
         </dependency>
+        <!--  bla  -->
         <dependency>
             <groupId>io.quarkiverse.pact</groupId>
             <artifactId>quarkus-pact-consumer</artifactId>
