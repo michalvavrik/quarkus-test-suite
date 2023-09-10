@@ -20,7 +20,15 @@ public class OracleTransactionGeneralUsageIT extends TransactionCommons {
             .withProperty("quarkus.otel.exporter.otlp.traces.endpoint", jaeger::getCollectorUrl)
             .withProperty("quarkus.datasource.username", database.getUser())
             .withProperty("quarkus.datasource.password", database.getPassword())
-            .withProperty("quarkus.datasource.jdbc.url", database::getJdbcUrl);
+            .withProperty("quarkus.datasource.jdbc.url", database::getJdbcUrl)
+            //            .withProperty("quarkus.datasource.xa-ds-1.jdbc.driver",
+            //                    "io.quarkus.ts.transactions.recovery.driver.CrashingOracleXADataSource")
+            .withProperty("quarkus.datasource.xa-ds-1.jdbc.driver",
+                    "oracle.jdbc.xa.client.OracleXADataSource")
+            .withProperty("quarkus.datasource.oracle-configure-xa.username", "sys as sysdba")
+            .withProperty("quarkus.datasource.oracle-configure-xa.password", database.getPassword())
+            .withProperty("quarkus.datasource.oracle-configure-xa.db-kind", "oracle")
+            .withProperty("quarkus.datasource.oracle-configure-xa.jdbc.url", database::getJdbcUrl);
 
     @Override
     protected RestService getApp() {
@@ -29,7 +37,7 @@ public class OracleTransactionGeneralUsageIT extends TransactionCommons {
 
     @Override
     protected TransactionExecutor getTransactionExecutorUsedForRecovery() {
-        return TransactionExecutor.QUARKUS_TRANSACTION_CALL;
+        return TransactionExecutor.STATIC_USER_TRANSACTION;
     }
 
     @Override
@@ -37,9 +45,4 @@ public class OracleTransactionGeneralUsageIT extends TransactionCommons {
         return new String[] { "SELECT mydb", "INSERT mydb.journal", "UPDATE mydb.account" };
     }
 
-    @Override
-    protected void testTransactionRecoveryInternal() {
-        // disables transaction recovery test for Oracle due to upstream issue
-        // TODO: remove this method when https://github.com/quarkusio/quarkus/issues/35333 gets fixed
-    }
 }

@@ -31,7 +31,7 @@ public class OpenShiftMysqlTransactionGeneralUsageIT extends TransactionCommons 
 
     @Override
     protected TransactionExecutor getTransactionExecutorUsedForRecovery() {
-        return TransactionExecutor.STATIC_USER_TRANSACTION;
+        return TransactionExecutor.QUARKUS_TRANSACTION_CALL;
     }
 
     @Override
