@@ -33,6 +33,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.awaitility.core.ConditionTimeoutException;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
@@ -64,12 +65,21 @@ public class QuarkusCliCreateJvmApplicationIT {
     @Inject
     static QuarkusCliClient cliClient;
 
+    private static QuarkusCliRestService app;
+
+    @AfterEach
+    public void afterEach() {
+        if (app != null) {
+            app.stop();
+        }
+    }
+
     @Tag("QUARKUS-1071")
     @Tag("QUARKUS-1072")
     @Test
     public void shouldCreateApplicationOnJvm() {
         // Create application
-        QuarkusCliRestService app = cliClient.createApplication("app", defaultWithFixedStream());
+        app = cliClient.createApplication("app", defaultWithFixedStream());
 
         // Should build on Jvm
         Result result = app.buildOnJvm();
@@ -83,7 +93,7 @@ public class QuarkusCliCreateJvmApplicationIT {
     @Tag("QUARKUS-1472")
     @Test
     public void createAppShouldAutoDetectJavaVersion() {
-        QuarkusCliRestService app = cliClient.createApplication("app", defaultWithFixedStream());
+        app = cliClient.createApplication("app", defaultWithFixedStream());
         assertExpectedJavaVersion(getFileFromApplication(app, ROOT_FOLDER, "pom.xml"), getSystemJavaVersion());
         assertDockerJavaVersion(getFileFromApplication(app, DOCKER_FOLDER, DOCKERFILE_JVM), getSystemJavaVersion());
     }
@@ -92,7 +102,7 @@ public class QuarkusCliCreateJvmApplicationIT {
     @Test
     public void shouldCreateAnApplicationForcingJavaVersion11() {
         CreateApplicationRequest args = defaultWithFixedStream().withExtraArgs("--java=" + JDK_11);
-        QuarkusCliRestService app = cliClient.createApplication("app", args);
+        app = cliClient.createApplication("app", args);
         assertExpectedJavaVersion(getFileFromApplication(app, ROOT_FOLDER, "pom.xml"), JDK_11);
         assertDockerJavaVersion(getFileFromApplication(app, DOCKER_FOLDER, DOCKERFILE_JVM), JDK_11);
     }
@@ -101,7 +111,7 @@ public class QuarkusCliCreateJvmApplicationIT {
     @Test
     public void shouldCreateAnApplicationForcingJavaVersion17() {
         CreateApplicationRequest args = defaultWithFixedStream().withExtraArgs("--java=" + JDK_17);
-        QuarkusCliRestService app = cliClient.createApplication("app", args);
+        app = cliClient.createApplication("app", args);
         assertExpectedJavaVersion(getFileFromApplication(app, ROOT_FOLDER, "pom.xml"), JDK_17);
         assertDockerJavaVersion(getFileFromApplication(app, DOCKER_FOLDER, DOCKERFILE_JVM), JDK_17);
     }
@@ -109,7 +119,7 @@ public class QuarkusCliCreateJvmApplicationIT {
     @Test
     public void quarkusCreatedWithJava18ShouldUseJava17() {
         CreateApplicationRequest args = defaultWithFixedStream().withExtraArgs("--java=" + JDK_18);
-        QuarkusCliRestService app = cliClient.createApplication("app", args);
+        app = cliClient.createApplication("app", args);
         assertExpectedJavaVersion(getFileFromApplication(app, ROOT_FOLDER, "pom.xml"), JDK_17);
         assertDockerJavaVersion(getFileFromApplication(app, DOCKER_FOLDER, DOCKERFILE_JVM), JDK_17);
     }
@@ -119,7 +129,7 @@ public class QuarkusCliCreateJvmApplicationIT {
     public void shouldCreateApplicationWithGradleOnJvm() {
 
         // Create application
-        QuarkusCliRestService app = cliClient.createApplication("app", defaultWithFixedStream().withExtraArgs("--gradle"));
+        app = cliClient.createApplication("app", defaultWithFixedStream().withExtraArgs("--gradle"));
 
         // Should build on Jvm
         final String repository = System.getProperty("maven.repo.local");
@@ -143,7 +153,7 @@ public class QuarkusCliCreateJvmApplicationIT {
     public void shouldCreateApplicationWithJbangOnJvm() {
 
         // Create application
-        QuarkusCliRestService app = cliClient.createApplication("app", defaultWithFixedStream().withExtraArgs("--jbang"));
+        app = cliClient.createApplication("app", defaultWithFixedStream().withExtraArgs("--jbang"));
 
         // Should build on Jvm
         final String repository = System.getProperty("maven.repo.local");
@@ -176,7 +186,7 @@ public class QuarkusCliCreateJvmApplicationIT {
         // Also, it verifies that quarkiverse dependencies can be added too.
         final String kogitoExtension = "kogito-quarkus-rules";
         final String prettytimeExtension = "quarkus-prettytime";
-        QuarkusCliRestService app = cliClient.createApplication("app", defaultWithFixedStream().withExtensions(kogitoExtension,
+        app = cliClient.createApplication("app", defaultWithFixedStream().withExtensions(kogitoExtension,
                 prettytimeExtension, RESTEASY_REACTIVE_EXTENSION, RESTEASY_REACTIVE_JACKSON_EXTENSION));
 
         // Should build on Jvm
@@ -190,7 +200,7 @@ public class QuarkusCliCreateJvmApplicationIT {
     @Test
     public void shouldCreateApplicationWithCodeStarter() {
         // Create application with Resteasy Jackson + Spring Web (we need both for the app to run)
-        QuarkusCliRestService app = cliClient.createApplication("app",
+        app = cliClient.createApplication("app",
                 defaultWithFixedStream().withExtensions(RESTEASY_REACTIVE_JACKSON_EXTENSION, SPRING_WEB_EXTENSION));
 
         // Verify By default, it installs only "quarkus-resteasy-reactive-jackson" and "quarkus-spring-web"
@@ -206,7 +216,7 @@ public class QuarkusCliCreateJvmApplicationIT {
     public void shouldAddAndRemoveExtensions() {
         // Create application
         String gav = QuarkusProperties.PLATFORM_GROUP_ID.get() + ":quarkus-bom:" + QuarkusProperties.getVersion();
-        QuarkusCliRestService app = cliClient.createApplication("app", defaults().withPlatformBom(gav));
+        app = cliClient.createApplication("app", defaults().withPlatformBom(gav));
 
         // By default, it installs only "quarkus-resteasy"
         assertInstalledExtensions(app, RESTEASY_REACTIVE_EXTENSION);
@@ -236,7 +246,7 @@ public class QuarkusCliCreateJvmApplicationIT {
     @Test
     public void shouldKeepUsingTheSameQuarkusVersionAfterReload() {
         // Generate application using old community version
-        QuarkusCliRestService app = cliClient.createApplication("app", defaults()
+        app = cliClient.createApplication("app", defaults()
                 .withPlatformBom("io.quarkus:quarkus-bom:3.0.0.Alpha4")
                 .withExtensions(SMALLRYE_HEALTH_EXTENSION, RESTEASY_REACTIVE_EXTENSION));
 
@@ -258,7 +268,7 @@ public class QuarkusCliCreateJvmApplicationIT {
     @Tag("QUARKUS-1255")
     @Test
     public void shouldCreateJacocoReportsFromApplicationOnJvm() {
-        QuarkusCliRestService app = cliClient.createApplication("app-with-jacoco",
+        app = cliClient.createApplication("app-with-jacoco",
                 defaultWithFixedStream().withExtensions("resteasy", "jacoco"));
 
         Result result = app.buildOnJvm();
@@ -274,7 +284,7 @@ public class QuarkusCliCreateJvmApplicationIT {
     @Tag("QUARKUS-1296")
     @Test
     public void verifyRestEasyReactiveAndClassicResteasyCollisionUserMsg() {
-        QuarkusCliRestService app = cliClient.createApplication("dependencyCollision",
+        app = cliClient.createApplication("dependencyCollision",
                 defaultWithFixedStream().withExtensions("resteasy", "resteasy-reactive"));
 
         Result buildResult = app.buildOnJvm();
@@ -289,7 +299,7 @@ public class QuarkusCliCreateJvmApplicationIT {
 
     @Test
     public void devModeIgnoresPomPackaging() throws IOException {
-        QuarkusCliRestService app = cliClient.createApplication("pomApp", defaultWithFixedStream());
+        app = cliClient.createApplication("pomApp", defaultWithFixedStream());
         {//set packaging to POM
             Path pom = getFileFromApplication(app, ROOT_FOLDER, "pom.xml").toPath();
             List<String> content = Files.readAllLines(pom);
