@@ -64,8 +64,8 @@ public class QuarkusCliCreateJvmApplicationIT {
 
     @Inject
     static QuarkusCliClient cliClient;
-
-    private static QuarkusCliRestService app;
+    
+    private QuarkusCliRestService app;
 
     @AfterEach
     public void afterEach() {
