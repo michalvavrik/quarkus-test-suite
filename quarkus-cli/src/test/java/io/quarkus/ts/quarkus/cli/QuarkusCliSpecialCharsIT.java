@@ -5,6 +5,7 @@ import static io.quarkus.ts.quarkus.cli.QuarkusCliUtils.isUpstream;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -131,7 +132,9 @@ public class QuarkusCliSpecialCharsIT {
     }
 
     private void whenBuildOnJvmAppAt(String folder) {
-        result = cliClient.run(TARGET.resolve(folder + File.separator + ARTIFACT_ID), "build");
+        var pathIs = TARGET.resolve(folder + File.separator + ARTIFACT_ID);
+        System.out.println("path exist is: " + Files.exists(pathIs) + " and path is " + pathIs);
+        result = cliClient.run(pathIs, "build");
     }
 
     private void whenCreateAppAt(String folder) {
