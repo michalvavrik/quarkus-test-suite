@@ -265,6 +265,7 @@ public class QuarkusCliCreateJvmApplicationIT {
 
         // The health endpoint should be now gone
         app.restart();
+        app.restartAndWaitUntilServiceIsStarted();
         untilAsserted(() -> app.given().get("/q/health").then().statusCode(HttpStatus.SC_NOT_FOUND));
     }
 
