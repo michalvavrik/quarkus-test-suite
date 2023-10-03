@@ -384,6 +384,19 @@
             </modules>
         </profile>
         <profile>
+            <id>ext-app-modules</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>ext</name>
+                </property>
+            </activation>
+            <modules>
+                <module>env-info</module>
+                <module>external-applications</module>
+            </modules>
+        </profile>
+        <profile>
             <id>root-modules</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
