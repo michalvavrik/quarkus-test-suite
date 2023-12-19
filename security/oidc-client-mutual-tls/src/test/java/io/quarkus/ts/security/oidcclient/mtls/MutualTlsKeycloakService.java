@@ -44,12 +44,7 @@ public class MutualTlsKeycloakService extends KeycloakService {
      */
     @Override
     public String getRealmUrl() {
-        return format("%s:%s/%s/%s", getURI(Protocol.HTTPS).getRestAssuredStyleUri(), getPort(), realmBasePath, realm);
-    }
-
-    @Override
-    public Integer getPort() {
-        return openshiftScenario ? 443 : super.getURI().getPort();
+        return format("https://%s:443/%s/%s", getURI().getHost(), realmBasePath, realm);
     }
 
 }
