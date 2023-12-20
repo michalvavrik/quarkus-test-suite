@@ -17,25 +17,23 @@ import io.quarkus.test.services.QuarkusApplication;
 @EnabledIfSystemProperty(named = "ts.redhat.registry.enabled", matches = "true")
 public class OpenShiftRhSsoOidcMtlsIT extends KeycloakMtlsAuthN {
 
+    //TODO Remove workaround after Keycloak is fixed https://github.com/keycloak/keycloak/issues/9916
     @KeycloakContainer(command = { "start-dev", "--import-realm", "--hostname-strict=false",
-            "--hostname-strict-https=false", "--features=token-exchange", "--hostname=localhost",
-            "--https-client-auth=required", "--https-key-store-file=/etc/keystore/server-keystore.p12",
-            "--https-trust-store-file=/etc/truststore/server-truststore.p12",
-            "--https-trust-store-password=password" }, port = KEYCLOAK_PORT, image = "${rhbk.image}")
-    static MutualTlsKeycloakService keycloak = (MutualTlsKeycloakService) newKeycloakInstance(DEFAULT_REALM_FILE, REALM_DEFAULT,
-            "realms")
-            .withProperty("HTTPS_KEYSTORE",
-                    "secret_with_destination::/etc/keystore|server-keystore." + P12_KEYSTORE_FILE_EXTENSION)
-            .withProperty("HTTPS_TRUSTSTORE",
-                    "secret_with_destination::/etc/truststore|server-truststore." + P12_KEYSTORE_FILE_EXTENSION);
+            "--hostname-strict-https=false", "--features=token-exchange",
+            "--https-client-auth=required", "--https-certificate-file=/etc/tls-crt/tls.crt",
+            "--https-certificate-key-file=/etc/tls-key/tls.key" }, port = KEYCLOAK_PORT, image = "${rhbk.image}")
+    static KeycloakService keycloak = newKeycloakInstance(DEFAULT_REALM_FILE, REALM_DEFAULT, "realms")
+            .withRedHatFipsDisabled()
+            .withProperty("KC_HTTPS_CERTIFICATE_FILE", "secret_with_destination::/etc/tls-crt|tls.crt")
+            .withProperty("KC_HTTPS_CERTIFICATE_KEY_FILE", "secret_with_destination::/etc/tls-key|tls.key");
 
     /**
      * Keystore file type is automatically detected by file extension by quarkus-oidc.
      */
     @QuarkusApplication
-    static RestService app = createRestService(P12_KEYSTORE_FILE_TYPE, P12_KEYSTORE_FILE_EXTENSION, keycloak::getRealmUrl)
-            .withProperty("quarkus.oidc.tls.trust-store-file", "client-truststore." + P12_KEYSTORE_FILE_EXTENSION)
-            .withProperty("quarkus.oidc.tls.key-store-file", "client-keystore." + P12_KEYSTORE_FILE_EXTENSION);
+    static RestService app = createRestService(JKS_KEYSTORE_FILE_TYPE, JKS_KEYSTORE_FILE_EXTENSION, keycloak::getRealmUrl)
+            .withProperty("quarkus.oidc.tls.trust-store-file", "rhsso-client-truststore.jks")
+            .withProperty("quarkus.oidc.tls.key-store-file", "rhsso-client-keystore.jks");
 
     @Override
     protected KeycloakService getKeycloakService() {
@@ -44,7 +42,7 @@ public class OpenShiftRhSsoOidcMtlsIT extends KeycloakMtlsAuthN {
 
     @Override
     protected String getKeystoreFileExtension() {
-        return P12_KEYSTORE_FILE_EXTENSION;
+        return JKS_KEYSTORE_FILE_EXTENSION;
     }
 
 }
