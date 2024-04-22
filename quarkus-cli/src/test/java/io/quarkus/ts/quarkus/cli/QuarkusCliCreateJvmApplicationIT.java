@@ -45,6 +45,7 @@ import io.quarkus.test.scenarios.QuarkusScenario;
 import io.quarkus.test.scenarios.annotations.DisabledOnNative;
 import io.quarkus.test.scenarios.annotations.DisabledOnQuarkusVersion;
 import io.quarkus.test.services.quarkus.model.QuarkusProperties;
+import io.restassured.filter.log.ResponseLoggingFilter;
 
 @Tag("QUARKUS-960")
 @Tag("quarkus-cli")
@@ -79,7 +80,9 @@ public class QuarkusCliCreateJvmApplicationIT {
 
         // Start using DEV mode
         app.start();
-        app.given().get().then().statusCode(HttpStatus.SC_OK);
+        untilAsserted(() -> app.given()
+                .log().all().filter(new ResponseLoggingFilter())
+                .get().then().statusCode(HttpStatus.SC_OK));
     }
 
     @Tag("QUARKUS-1472")
