@@ -80,12 +80,13 @@ public class QuarkusCliCreateJvmApplicationIT {
 
         // Start using DEV mode
         app.start();
-        untilAsserted(() -> {
+        try {
             app.given()
                     .log().all().filter(new ResponseLoggingFilter())
                     .get().then().statusCode(HttpStatus.SC_OK);
-            System.exit(1);
-        });
+        } catch (Throwable t) {
+            Runtime.getRuntime().halt(1);
+        }
     }
 
     @Tag("QUARKUS-1472")
