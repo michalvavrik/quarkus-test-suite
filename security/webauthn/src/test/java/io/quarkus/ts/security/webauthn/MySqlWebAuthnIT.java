@@ -23,7 +23,8 @@ public class MySqlWebAuthnIT extends AbstractWebAuthnTest {
             .withProperty("quarkus.datasource.username", database::getUser)
             .withProperty("quarkus.datasource.password", database::getPassword)
             .withProperty("quarkus.datasource.reactive.url", () -> {
-                var url = database.getReactiveUrl() + "?DefaultAuthenticationPlugin=caching_sha2_password";
+                var url = database.getReactiveUrl()
+                        + "?DefaultAuthenticationPlugin=com.mysql.cj.protocol.a.authentication.CachingSha2PasswordPlugin";
                 System.out.println("url is ///////////////////// " + url);
                 return url;
             });
