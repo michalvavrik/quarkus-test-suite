@@ -17,7 +17,7 @@ public class MySqlWebAuthnIT extends AbstractWebAuthnTest {
     @QuarkusApplication
     static RestService app = new RestService().withProperties("mysql.properties")
             // TODO: re-check whether it is necessary when MySQL version changes from 8.0.x
-            .withProperty("quarkus.datasource.reactive.mysql.authentication-plugin", "caching-sha2-password")
+            .withProperty("quarkus.datasource.reactive.authentication-plugin", "caching-sha2-password")
             .withProperty("quarkus.datasource.username", database::getUser)
             .withProperty("quarkus.datasource.password", database::getPassword)
             .withProperty("quarkus.datasource.reactive.url", database::getReactiveUrl);
