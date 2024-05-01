@@ -16,18 +16,11 @@ public class MySqlWebAuthnIT extends AbstractWebAuthnTest {
 
     @QuarkusApplication
     static RestService app = new RestService().withProperties("mysql.properties")
-            // set https://dev.mysql.com/doc/connector-j/en/connector-j-connp-props-authentication.html#cj-conn-prop_defaultAuthenticationPlugin
-            // to https://dev.mysql.com/doc/refman/8.0/en/caching-sha2-pluggable-authentication.html
-            // as ATM default authentication mechanism is not supported in FIPS-enabled environment
             // TODO: re-check whether it is necessary when MySQL version changes from 8.0.x
+            .withProperty("quarkus.datasource.reactive.mysql.authentication-plugin", "caching-sha2-password")
             .withProperty("quarkus.datasource.username", database::getUser)
             .withProperty("quarkus.datasource.password", database::getPassword)
-            .withProperty("quarkus.datasource.reactive.url", () -> {
-                var url = database.getReactiveUrl()
-                        + "?DefaultAuthenticationPlugin=com.mysql.cj.protocol.a.authentication.CachingSha2PasswordPlugin";
-                System.out.println("url is ///////////////////// " + url);
-                return url;
-            });
+            .withProperty("quarkus.datasource.reactive.url", database::getReactiveUrl);
 
     @Override
     protected RestService getApp() {
