@@ -20,10 +20,13 @@ public class MySqlWebAuthnIT extends AbstractWebAuthnTest {
             // to https://dev.mysql.com/doc/refman/8.0/en/caching-sha2-pluggable-authentication.html
             // as ATM default authentication mechanism is not supported in FIPS-enabled environment
             // TODO: re-check whether it is necessary when MySQL version changes from 8.0.x
-            .withProperty("defaultAuthenticationPlugin", "caching_sha2_password")
             .withProperty("quarkus.datasource.username", database::getUser)
             .withProperty("quarkus.datasource.password", database::getPassword)
-            .withProperty("quarkus.datasource.reactive.url", database::getReactiveUrl);
+            .withProperty("quarkus.datasource.reactive.url", () -> {
+                var url = database.getReactiveUrl() + "?DefaultAuthenticationPlugin=caching_sha2_password";
+                System.out.println("url is ///////////////////// " + url);
+                return url;
+            });
 
     @Override
     protected RestService getApp() {
