@@ -12,11 +12,11 @@ public class MySqlWebAuthnIT extends AbstractWebAuthnTest {
     private static final int MYSQL_PORT = 3306;
 
     @Container(image = "${mysql.80.image}", port = MYSQL_PORT, expectedLog = "Only MySQL server logs after this point")
-    static MySqlService database = new MySqlService();
+    static MySqlService database = new MySqlService().withPassword("abcdefghchijklmnopqrstuvwx123456789");
 
     @QuarkusApplication
     static RestService app = new RestService().withProperties("mysql.properties")
-            .withProperty("quarkus.datasource.reactive.mysql.authentication-plugin", "mysql-clear-password")
+            //            .withProperty("quarkus.datasource.reactive.mysql.authentication-plugin", "mysql-clear-password")
             .withProperty("quarkus.datasource.username", database::getUser)
             .withProperty("quarkus.datasource.password", database::getPassword)
             .withProperty("quarkus.datasource.reactive.url", database::getReactiveUrl);
