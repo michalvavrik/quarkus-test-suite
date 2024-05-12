@@ -26,8 +26,6 @@ public class DB2DatabaseIT extends AbstractSqlDatabaseIT {
 
     @Container(image = "${db2.image}", port = DB2_PORT, expectedLog = "Setup has completed")
     static Db2Service db2 = new Db2Service()
-            .withProperty("resource_key_1", "resource_with_destination::/|mydb.sth")
-            .withProperty("resource_key_2", "resource_with_destination::/|mydb.kdb")
             .withProperty("container.privileged-mode", "true")
             .onPostStart(svc -> {
                 var self = (Db2Service) svc;
