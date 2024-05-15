@@ -19,6 +19,7 @@ public class MssqlDatabaseIT extends AbstractSqlDatabaseIT {
             .withProperties("mssql.properties")
             .withProperty("quarkus.datasource.jdbc.additional-jdbc-properties.encrypt", "false")
             .withProperty("quarkus.datasource.jdbc.additional-jdbc-properties.trustServerCertificate", "false")
+            .withProperty("quarkus.datasource.jdbc.additional-jdbc-properties.sslProtocol", "")
             .withProperty("quarkus.datasource.username", database.getUser())
             .withProperty("quarkus.datasource.password", database.getPassword())
             .withProperty("quarkus.datasource.jdbc.url", database::getJdbcUrl);
