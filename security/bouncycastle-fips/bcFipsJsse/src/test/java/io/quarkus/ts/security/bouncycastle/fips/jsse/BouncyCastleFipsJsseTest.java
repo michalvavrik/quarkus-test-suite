@@ -11,8 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import jakarta.inject.Inject;
-
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -35,8 +33,8 @@ public class BouncyCastleFipsJsseTest {
     private static final String BCJSSE = "BCJSSE";
     private static final String KS_TYPE = "BCFKS";
 
-    @Inject
-    Vertx vertx;
+    //@Inject
+    Vertx vertx = Vertx.vertx();
 
     @Tag("QUARKUS-2749")
     @Test
