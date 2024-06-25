@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import io.quarkus.ts.http.restclient.reactive.MyMultipartDTO;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -20,7 +21,7 @@ import io.quarkus.ts.http.restclient.reactive.Item;
 @Path("/simple")
 public class RestEncodeClientResource {
 
-    @POST
+   /* @POST
     @Path("/encode")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
@@ -41,5 +42,28 @@ public class RestEncodeClientResource {
 
         }
         return items;
+    }*/
+
+    @POST
+    @Path("/encode")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public MyMultipartDTO doAPostRequestToRestEncodeClientResource(MultipartFormDataInput multipartFormDataInput)
+            throws IOException {
+        Map<String, Collection<FormValue>> map = multipartFormDataInput.getValues();
+        List<Item> items = new ArrayList<>();
+        for (var entry : map.entrySet()) {
+            for (FormValue value : entry.getValue()) {
+                items.add(new Item(
+                        entry.getKey(),
+                        value.isFileItem() ? value.getFileItem().getFileSize() : value.getValue().length(),
+                        value.getCharset(),
+                        value.getFileName(),
+                        value.isFileItem(),
+                        value.getHeaders()));
+            }
+
+        }
+        return new MyMultipartDTO(items);
     }
 }
