@@ -14,9 +14,15 @@ import org.infinispan.commons.util.SaslUtils;
 import org.infinispan.commons.util.Util;
 
 import io.quarkus.runtime.StartupEvent;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import javax.security.sasl.SaslClientFactory;
 
+@RegisterForReflection(classNames = {
+        "com.sun.security.sasl.ClientFactoryImpl",
+        "com.sun.security.sasl.ntlm.FactoryImpl",
+        "com.sun.security.sasl.digest.FactoryImpl"
+})
 public class RegisterSaslWildflyPackageForReflection {
 
     private static final Provider[] SECURITY_PROVIDERS;
@@ -25,7 +31,7 @@ public class RegisterSaslWildflyPackageForReflection {
         Collection<SaslClientFactory> clientFactories = SaslUtils
                 .getSaslClientFactories(this.getClass().getClassLoader(), SECURITY_PROVIDERS, true);
         for (SaslClientFactory clientFactory : clientFactories) {
-            System.out.println("client factory is " + clientFactory);
+            System.out.println("client factory is " + clientFactory.getClass().getName());
         }
     }
 
