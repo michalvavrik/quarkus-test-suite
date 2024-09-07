@@ -12,9 +12,7 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
 import org.apache.kafka.clients.CommonClientConfigs;
-import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.config.SslConfigs;
@@ -62,15 +60,6 @@ public class SslKafkaProvider extends KafkaProviders {
         Properties props = setupProducerProperties(sslKafkaBootStrap);
         sslSetup(props);
         return new KafkaProducer<>(props);
-    }
-
-    @Singleton
-    @Produces
-    @Named("kafka-admin-ssl")
-    AdminClient getSslAdmin() {
-        Properties props = setupConsumerProperties(sslKafkaBootStrap);
-        sslSetup(props);
-        return KafkaAdminClient.create(props);
     }
 
     protected void sslSetup(Properties props) {

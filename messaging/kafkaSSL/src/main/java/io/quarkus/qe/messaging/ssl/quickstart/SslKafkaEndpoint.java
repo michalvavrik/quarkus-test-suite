@@ -21,6 +21,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import io.quarkus.kafka.client.runtime.KafkaAdminClient;
 import io.quarkus.runtime.StartupEvent;
 
 @Path("/kafka/ssl")
@@ -37,11 +38,12 @@ public class SslKafkaEndpoint extends KafkaEndpoint {
     Provider<KafkaProducer<String, String>> sslProducer;
 
     @Inject
-    @Named("kafka-admin-ssl")
     Provider<AdminClient> sslAdmin;
 
     public void initialize(@Observes StartupEvent ev,
-            @ConfigProperty(name = "kafka.ssl.enable", defaultValue = "false") Boolean sslEnabled) {
+            @ConfigProperty(name = "kafka.ssl.enable", defaultValue = "false") Boolean sslEnabled,
+            Provider<KafkaAdminClient> sslAdmin) throws ExecutionException, InterruptedException {
+        sslAdmin.get().getTopics();
         if (sslEnabled) {
             super.initialize(sslConsumer.get());
         }
