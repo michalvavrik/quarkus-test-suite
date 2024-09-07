@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Properties;
 
-import io.quarkus.tls.TlsConfiguration;
-import io.quarkus.tls.TlsConfigurationRegistry;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -19,6 +17,9 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.config.SslConfigs;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import io.quarkus.tls.TlsConfiguration;
+import io.quarkus.tls.TlsConfigurationRegistry;
 
 public class SaslSslKafkaProvider extends KafkaProviders {
 

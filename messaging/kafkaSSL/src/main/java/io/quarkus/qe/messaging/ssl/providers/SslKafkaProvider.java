@@ -2,10 +2,10 @@ package io.quarkus.qe.messaging.ssl.providers;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
-import io.quarkus.tls.TlsConfiguration;
-import io.quarkus.tls.TlsConfigurationRegistry;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -13,11 +13,15 @@ import jakarta.inject.Singleton;
 
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.config.SslConfigs;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import io.quarkus.tls.TlsConfigurationRegistry;
+import io.smallrye.common.annotation.Identifier;
 
 public class SslKafkaProvider extends KafkaProviders {
 
@@ -35,6 +39,10 @@ public class SslKafkaProvider extends KafkaProviders {
 
     @Inject
     TlsConfigurationRegistry tlsConfigRegistry;
+
+    @Inject
+    @Identifier("default-kafka-broker")
+    Map<String, Object> kafkaConfig;
 
     @Singleton
     @Produces
@@ -66,17 +74,26 @@ public class SslKafkaProvider extends KafkaProviders {
     }
 
     protected void sslSetup(Properties props) {
-        File tsFile = new File(trustStoreFile);
-        props.setProperty(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SSL");
-        props.setProperty(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, tsFile.getPath());
-        props.setProperty(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, trustStorePassword);
-        props.setProperty(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, trustStoreType);
-        props.setProperty(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, "");
+        if (isTlsConfigScenario()) {
+            Map<String, Object> config = new HashMap<>();
+            for (Map.Entry<String, Object> entry : kafkaConfig.entrySet()) {
+                if (AdminClientConfig.configNames().contains(entry.getKey())) {
+                    config.put(entry.getKey(), entry.getValue().toString());
+                }
+            }
+            props.putAll(config);
+        } else {
+            File tsFile = new File(trustStoreFile);
+            props.setProperty(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SSL");
+            props.setProperty(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, tsFile.getPath());
+            props.setProperty(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, trustStorePassword);
+            props.setProperty(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, trustStoreType);
+            props.setProperty(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, "");
+        }
     }
 
-    private TlsConfiguration getTlsConfig() {
-        return tlsConfigRegistry
-                .get("kafka-ssl")
-                .orElseThrow(() -> new IllegalStateException("Named TLS configuration 'kafka-ssl' not found."));
+    private boolean isTlsConfigScenario() {
+        return tlsConfigRegistry.get("kafka-ssl").isPresent();
     }
+
 }
