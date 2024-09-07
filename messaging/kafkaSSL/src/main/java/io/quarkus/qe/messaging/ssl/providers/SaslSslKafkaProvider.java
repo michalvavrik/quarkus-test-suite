@@ -4,7 +4,10 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Properties;
 
+import io.quarkus.tls.TlsConfiguration;
+import io.quarkus.tls.TlsConfigurationRegistry;
 import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
@@ -33,6 +36,9 @@ public class SaslSslKafkaProvider extends KafkaProviders {
 
     @ConfigProperty(name = "kafka.ssl.truststore.type", defaultValue = "PKCS12")
     String trustStoreType;
+
+    @Inject
+    TlsConfigurationRegistry tlsConfigRegistry;
 
     @Singleton
     @Produces
@@ -80,5 +86,11 @@ public class SaslSslKafkaProvider extends KafkaProviders {
         props.setProperty(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, trustStorePassword);
         props.setProperty(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, trustStoreType);
         props.setProperty(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, "");
+    }
+
+    private TlsConfiguration getTlsConfig() {
+        return tlsConfigRegistry
+                .get("kafka-ssl")
+                .orElseThrow(() -> new IllegalStateException("Named TLS configuration 'kafka-ssl' not found."));
     }
 }
