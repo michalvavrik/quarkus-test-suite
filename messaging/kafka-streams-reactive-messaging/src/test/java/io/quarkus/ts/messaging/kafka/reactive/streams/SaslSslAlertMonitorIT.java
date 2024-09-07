@@ -12,7 +12,7 @@ import io.quarkus.test.services.containers.model.KafkaVendor;
 @QuarkusScenario
 public class SaslSslAlertMonitorIT extends BaseKafkaStreamTest {
 
-    @KafkaContainer(vendor = KafkaVendor.STRIMZI, protocol = KafkaProtocol.SASL_SSL)
+    @KafkaContainer(vendor = KafkaVendor.STRIMZI, protocol = KafkaProtocol.SASL_SSL, tlsRegistryEnabled = true, tlsConfigName = "sasl-monitor")
     static final KafkaService kafka = new KafkaService();
 
     @QuarkusApplication
