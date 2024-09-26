@@ -1,5 +1,3 @@
-import static java.util.concurrent.CompletableFuture.runAsync;
-
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.bootstrap.RestService;
@@ -22,17 +20,11 @@ public class PicocliProfileProdIT {
             OtherCommand.class, OtherEntryCommand.class,
             Configuration.class, AgeService.class, HelloService.class }, properties = "prod.properties")
     static final RestService customized = new RestService()
-            .withProperty("quarkus.args", "start -t 60 -v")
-            .setAutoStart(false);
+            .withProperty("quarkus.args", "start -t 60 -v");
 
     @Test
     public void verifyCustomizedCommandLineBehavior() {
         String expectedOutput = "Service started with timeout: 60 and verbosity";
-        try {
-            runAsync(customized::start);
-            customized.logs().assertContains(expectedOutput);
-        } finally {
-            customized.stop();
-        }
+        customized.logs().assertContains(expectedOutput);
     }
 }
