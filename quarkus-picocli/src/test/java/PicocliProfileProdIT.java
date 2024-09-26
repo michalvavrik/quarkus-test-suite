@@ -16,7 +16,8 @@ import io.quarkus.ts.qe.services.AgeService;
 import io.quarkus.ts.qe.services.HelloService;
 
 @QuarkusScenario
-public class PicocliPofileProdIT {
+public class PicocliProfileProdIT {
+
     @QuarkusApplication(classes = { AgeCommand.class, CommonOptions.class, EntryCommand.class, HelloCommand.class,
             OtherCommand.class, OtherEntryCommand.class,
             Configuration.class, AgeService.class, HelloService.class }, properties = "prod.properties")

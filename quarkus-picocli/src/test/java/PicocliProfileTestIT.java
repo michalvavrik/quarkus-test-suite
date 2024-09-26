@@ -21,74 +21,49 @@ public class PicocliProfileTestIT {
     @QuarkusApplication(classes = { AgeCommand.class, CommonOptions.class, EntryCommand.class, HelloCommand.class,
             OtherCommand.class, OtherEntryCommand.class,
             Configuration.class, AgeService.class, HelloService.class }, properties = "test.properties")
-    static final RestService greetingApp = new RestService()
-            .withProperty("quarkus.args", "greeting --name QE")
-            .setAutoStart(false);
-
-    @QuarkusApplication(classes = { AgeCommand.class, CommonOptions.class, EntryCommand.class, HelloCommand.class,
-            OtherCommand.class, OtherEntryCommand.class,
-            Configuration.class, AgeService.class, HelloService.class }, properties = "test.properties")
-    static final RestService ageApp = new RestService()
-            .withProperty("quarkus.args", "age --age 30")
-            .setAutoStart(false);
-
-    @QuarkusApplication(classes = { AgeCommand.class, CommonOptions.class, EntryCommand.class, HelloCommand.class,
-            OtherCommand.class, OtherEntryCommand.class,
-            Configuration.class, AgeService.class, HelloService.class }, properties = "test.properties")
-    static final RestService greetingBlankArgumentApp = new RestService()
-            .withProperty("quarkus.args", " --name QE")
-            .setAutoStart(false);
-
-    @QuarkusApplication(classes = { AgeCommand.class, CommonOptions.class, EntryCommand.class, HelloCommand.class,
-            OtherCommand.class, OtherEntryCommand.class,
-            Configuration.class, AgeService.class, HelloService.class }, properties = "test.properties")
-    static final RestService greetingInvalidArgumentApp = new RestService()
-            .withProperty("quarkus.args", "greeting -x QE")
-            .setAutoStart(false);
-
-    @QuarkusApplication(classes = { AgeCommand.class, CommonOptions.class, EntryCommand.class, HelloCommand.class,
-            OtherCommand.class, OtherEntryCommand.class,
-            Configuration.class, AgeService.class, HelloService.class }, properties = "test.properties")
-    static final RestService bothTopCommandApp = new RestService()
-            .setAutoStart(false);
+    static final RestService app = new RestService().setAutoStart(false);
 
     @Test
     public void verifyErrorForApplicationScopedBeanInPicocliCommand() {
         try {
-            runAsync(ageApp::start);
-            ageApp.logs().assertContains("CDI: programmatic lookup problem detected");
+            app.withProperty("quarkus.args", "age --age 30");
+            runAsync(app::start);
+            app.logs().assertContains("CDI: programmatic lookup problem detected");
         } finally {
-            ageApp.stop();
+            app.stop();
         }
     }
 
     @Test
     public void verifyGreetingCommandOutputsExpectedMessage() {
         try {
-            runAsync(greetingApp::start);
-            greetingApp.logs().assertContains("Hello QE!");
+            app.withProperty("quarkus.args", "greeting --name QE");
+            runAsync(app::start);
+            app.logs().assertContains("Hello QE!");
         } finally {
-            greetingApp.stop();
+            app.stop();
         }
     }
 
     @Test
     void verifyErrorForBlankArgumentsInGreetingCommand() {
         try {
-            runAsync(greetingBlankArgumentApp::start);
-            greetingBlankArgumentApp.logs().assertContains("Unmatched arguments from index 0: '', '--name', 'QE'");
+            app.withProperty("quarkus.args", " --name QE");
+            runAsync(app::start);
+            app.logs().assertContains("Unmatched arguments from index 0: '', '--name', 'QE'");
         } finally {
-            greetingBlankArgumentApp.stop();
+            app.stop();
         }
     }
 
     @Test
     void verifyErrorForInvalidArgumentsInGreetingCommand() {
         try {
-            runAsync(greetingInvalidArgumentApp::start);
-            greetingInvalidArgumentApp.logs().assertContains("Unknown options: '-x', 'QE'");
+            app.withProperty("quarkus.args", "greeting -x QE");
+            runAsync(app::start);
+            app.logs().assertContains("Unknown options: '-x', 'QE'");
         } finally {
-            greetingInvalidArgumentApp.stop();
+            app.stop();
         }
     }
 
@@ -97,13 +72,13 @@ public class PicocliProfileTestIT {
      */
     @Test
     public void verifyErrorForMultipleCommandsWithoutTopCommand() {
-        bothTopCommandApp
+        app
                 .withProperty("quarkus.args", "greeting --name EEUU age --age 247");
         try {
-            runAsync(bothTopCommandApp::start);
-            bothTopCommandApp.logs().assertContains("Unmatched arguments from index 3: 'age', '--age', '247'");
+            runAsync(app::start);
+            app.logs().assertContains("Unmatched arguments from index 3: 'age', '--age', '247'");
         } finally {
-            bothTopCommandApp.stop();
+            app.stop();
         }
     }
 
