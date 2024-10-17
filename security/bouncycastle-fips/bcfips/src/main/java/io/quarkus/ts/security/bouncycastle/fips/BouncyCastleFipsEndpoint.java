@@ -13,6 +13,7 @@ public class BouncyCastleFipsEndpoint {
     @GET
     @Path("/listProviders")
     public String listProviders() {
+        System.out.println("//////////// BCFIPS Prov9ider is " + Security.getProvider("BCFIPS"));
         return Arrays.asList(Security.getProviders()).stream()
                 .map(p -> p.getName()).collect(Collectors.joining(","));
     }
