@@ -24,6 +24,7 @@ public class ConfigIT {
 
     @QuarkusApplication
     static RestService app = new RestService()
+            .withProperty("quarkus.security.security-providers", "SunPKCS11")
             .withProperty(ANSWER_KEY, ANSWER_VALUE)
             .withProperty("secret.password", "T0tallySafePa\\$\\$word")
             .withProperty("secret.ip", "127.0.0.1")
