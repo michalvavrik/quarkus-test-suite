@@ -21,7 +21,6 @@ public class MssqlHandlerIT {
             .withProperty("quarkus.datasource.mssql.jdbc.url", database::getJdbcUrl)
             .withProperty("quarkus.datasource.mssql.reactive.url", database::getReactiveUrl)
             .withProperty("quarkus.datasource.mssql.jdbc.additional-jdbc-properties.trustServerCertificate", "true")
-            .withProperty("app.selected.db", "mssql")
             // Enable Flyway for MySQL
             .withProperty("quarkus.flyway.mssql.migrate-at-start", "true");
 
