@@ -1,6 +1,7 @@
 package io.quarkus.ts.vertx.sql.handlers;
 
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 
 import io.quarkus.test.bootstrap.RestService;
@@ -12,7 +13,7 @@ import io.quarkus.test.services.SqlServerContainer;
 @Tag("fips-incompatible") // MSSQL works with BC JSSE FIPS which is not native-compatible, we test FIPS elsewhere
 @DisabledIfSystemProperty(named = "ts.arm.missing.services.excludes", matches = "true", disabledReason = "https://github.com/quarkus-qe/quarkus-test-suite/issues/2017")
 @QuarkusScenario
-public class MssqlHandlerIT extends CommonTestCases {
+public class MssqlHandlerIT {
 
     @SqlServerContainer
     static SqlServerService database = new SqlServerService();
@@ -27,4 +28,9 @@ public class MssqlHandlerIT extends CommonTestCases {
             .withProperty("app.selected.db", "mssql")
             // Enable Flyway for MySQL
             .withProperty("quarkus.flyway.mssql.migrate-at-start", "true");
+
+    @Test
+    public void startQuarkusApp() {
+        // must be here so that app starts
+    }
 }
