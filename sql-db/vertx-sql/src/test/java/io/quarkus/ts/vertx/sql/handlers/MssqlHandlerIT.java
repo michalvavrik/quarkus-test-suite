@@ -11,12 +11,8 @@ import io.quarkus.test.services.SqlServerContainer;
 @QuarkusScenario
 public class MssqlHandlerIT {
 
-    @SqlServerContainer
-    static SqlServerService database = new SqlServerService();
-
     @QuarkusApplication
-    static final RestService app = new RestService()
-            .withProperty("quarkus.datasource.jdbc.url", database::getJdbcUrl);
+    static final RestService app = new RestService();
 
     @Test
     public void startQuarkusApp() {
