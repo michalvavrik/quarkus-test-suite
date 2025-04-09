@@ -109,7 +109,11 @@ public class OpenTelemetryLoggingIT {
         await().atMost(isWinOs ? 57 : 7, TimeUnit.SECONDS).untilAsserted(() -> {
             assertEquals(initLogLines + 2, getWarningLogCount(SERVICE_NAME),
                     () -> "Lines should arrive within sending interval, log response was "
-                            + retrieveWarnings(SERVICE_NAME).asPrettyString());
+                            + given().when()
+                                    .queryParam("query", "{service_name=\"" + SERVICE_NAME + "\"}")
+                                    .queryParam("limit", 500)
+                                    .get(grafana.getRestUrl() + "/loki/api/v1/query_range")
+                                    .asPrettyString());
         });
 
         // generate more lines that fit more than one bulk
@@ -125,7 +129,11 @@ public class OpenTelemetryLoggingIT {
             assertTrue(actualNumOfLogLines >= expectedNumOfLogLines,
                     () -> "Bulk of log lines should arrive sooner, actual number of lines "
                             + actualNumOfLogLines + " should be greater or equal then " + expectedNumOfLogLines
-                            + "; log response was: " + retrieveWarnings(SERVICE_NAME).asPrettyString());
+                            + "; log response was: " + given().when()
+                                    .queryParam("query", "{service_name=\"" + SERVICE_NAME + "\"}")
+                                    .queryParam("limit", 500)
+                                    .get(grafana.getRestUrl() + "/loki/api/v1/query_range")
+                                    .asPrettyString());
         });
 
         // all messages should arrive in at most one sending period
