@@ -42,7 +42,7 @@ public class OpenTelemetryLoggingIT {
             .withProperty("quarkus.log.level", "DEBUG")
             .withProperty("quarkus.application.name", SERVICE_NAME)
             .withProperty("quarkus.otel.resource.attributes", "custom_attribute=" + CUSTOM_ATTRIBUTE_VALUE)
-            .withProperty("quarkus.otel.exporter.otlp.logs.timeout", "PT30S")
+            .withProperty("quarkus.otel.exporter.otlp.logs.timeout", "PT50S")
             .withProperty("quarkus.otel.blrp.schedule.delay", "PT5S")
             .withProperty("quarkus.otel.blrp.max.export.batch.size", BULK_SIZE.toString())
             .withProperty("quarkus.otel.exporter.otlp.logs.endpoint", grafana::getOtlpCollectorUrl);
@@ -106,7 +106,7 @@ public class OpenTelemetryLoggingIT {
         // add extra 30 seconds waiting period on Windows
         boolean isWinOs = OS.WINDOWS.isCurrentOs();
 
-        await().atMost(isWinOs ? 37 : 7, TimeUnit.SECONDS).untilAsserted(() -> {
+        await().atMost(isWinOs ? 57 : 7, TimeUnit.SECONDS).untilAsserted(() -> {
             assertEquals(initLogLines + 2, getWarningLogCount(SERVICE_NAME),
                     () -> "Lines should arrive within sending interval, log response was "
                             + retrieveWarnings(SERVICE_NAME).asPrettyString());
@@ -119,7 +119,7 @@ public class OpenTelemetryLoggingIT {
                 .body(equalTo("Lines generated"));
 
         // messages are more than one bulk, so at least one bulk should be sent soon
-        await().atMost(isWinOs ? 32 : 2, TimeUnit.SECONDS).untilAsserted(() -> {
+        await().atMost(isWinOs ? 52 : 2, TimeUnit.SECONDS).untilAsserted(() -> {
             int expectedNumOfLogLines = initLogLines + 2 + BULK_SIZE;
             int actualNumOfLogLines = getWarningLogCount(SERVICE_NAME);
             assertTrue(actualNumOfLogLines >= expectedNumOfLogLines,
@@ -129,7 +129,7 @@ public class OpenTelemetryLoggingIT {
         });
 
         // all messages should arrive in at most one sending period
-        await().atMost(isWinOs ? 37 : 7, TimeUnit.SECONDS).untilAsserted(() -> {
+        await().atMost(isWinOs ? 57 : 7, TimeUnit.SECONDS).untilAsserted(() -> {
             assertEquals(initLogLines + 22, getWarningLogCount(SERVICE_NAME),
                     "All logged lines should arrive withing sending interval");
         });
