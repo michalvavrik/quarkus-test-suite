@@ -20,7 +20,6 @@ import org.junit.jupiter.api.condition.OS;
 
 import io.quarkus.test.bootstrap.GrafanaService;
 import io.quarkus.test.bootstrap.RestService;
-import io.quarkus.test.logging.Log;
 import io.quarkus.test.scenarios.QuarkusScenario;
 import io.quarkus.test.services.GrafanaContainer;
 import io.quarkus.test.services.QuarkusApplication;
@@ -108,7 +107,8 @@ public class OpenTelemetryLoggingIT {
 
         await().atMost(isWinOs ? 37 : 7, TimeUnit.SECONDS).untilAsserted(() -> {
             assertEquals(initLogLines + 2, getWarningLogCount(SERVICE_NAME),
-                    "Lines should arrive within sending interval");
+                    () -> "Lines should arrive within sending interval, log response was "
+                            + retrieveWarnings(SERVICE_NAME).asPrettyString());
         });
 
         // generate more lines that fit more than one bulk
@@ -122,8 +122,9 @@ public class OpenTelemetryLoggingIT {
             int expectedNumOfLogLines = initLogLines + 2 + BULK_SIZE;
             int actualNumOfLogLines = getWarningLogCount(SERVICE_NAME);
             assertTrue(actualNumOfLogLines >= expectedNumOfLogLines,
-                    "Bulk of log lines should arrive sooner, actual number of lines "
-                            + actualNumOfLogLines + " should be greater or equal then " + expectedNumOfLogLines);
+                    () -> "Bulk of log lines should arrive sooner, actual number of lines "
+                            + actualNumOfLogLines + " should be greater or equal then " + expectedNumOfLogLines
+                            + "; log response was: " + retrieveWarnings(SERVICE_NAME).asPrettyString());
         });
 
         // all messages should arrive in at most one sending period
@@ -142,7 +143,6 @@ public class OpenTelemetryLoggingIT {
         Response logsResponse = retrieveWarnings(serviceName);
         assertEquals("success", logsResponse.jsonPath().getString("status"),
                 "Should succeed when getting the logs from server");
-        Log.error("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW logs response is " + logsResponse.asPrettyString());
         List<LogEntry> parsedLogs = parseJsonLogs(logsResponse.jsonPath().getJsonObject("data.result"));
         return parsedLogs.size();
     }
