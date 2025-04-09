@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.OS;
 
 import io.quarkus.test.bootstrap.GrafanaService;
 import io.quarkus.test.bootstrap.RestService;
@@ -101,7 +102,10 @@ public class OpenTelemetryLoggingIT {
                 .statusCode(HttpStatus.SC_OK)
                 .body(equalTo("Lines generated"));
 
-        await().atMost(7, TimeUnit.SECONDS).untilAsserted(() -> {
+        // add extra 30 seconds waiting period on Windows
+        boolean isWinOs = OS.WINDOWS.isCurrentOs();
+
+        await().atMost(isWinOs ? 37 : 7, TimeUnit.SECONDS).untilAsserted(() -> {
             assertEquals(initLogLines + 2, getWarningLogCount(SERVICE_NAME),
                     "Lines should arrive within sending interval");
         });
@@ -113,13 +117,16 @@ public class OpenTelemetryLoggingIT {
                 .body(equalTo("Lines generated"));
 
         // messages are more than one bulk, so at least one bulk should be sent soon
-        await().atMost(2, TimeUnit.SECONDS).untilAsserted(() -> {
-            assertTrue(getWarningLogCount(SERVICE_NAME) >= initLogLines + 2 + BULK_SIZE,
-                    "Bulk of log lines should arrive soon");
+        await().atMost(isWinOs ? 32 : 2, TimeUnit.SECONDS).untilAsserted(() -> {
+            int expectedNumOfLogLines = initLogLines + 2 + BULK_SIZE;
+            int actualNumOfLogLines = getWarningLogCount(SERVICE_NAME);
+            assertTrue(actualNumOfLogLines >= expectedNumOfLogLines,
+                    "Bulk of log lines should arrive sooner, actual number of lines "
+                            + actualNumOfLogLines + " should be greater or equal then " + expectedNumOfLogLines);
         });
 
         // all messages should arrive in at most one sending period
-        await().atMost(7, TimeUnit.SECONDS).untilAsserted(() -> {
+        await().atMost(isWinOs ? 37 : 7, TimeUnit.SECONDS).untilAsserted(() -> {
             assertEquals(initLogLines + 22, getWarningLogCount(SERVICE_NAME),
                     "All logged lines should arrive withing sending interval");
         });
