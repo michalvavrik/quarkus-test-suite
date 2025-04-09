@@ -43,6 +43,7 @@ public class OpenTelemetryLoggingIT {
             .withProperty("quarkus.application.name", SERVICE_NAME)
             .withProperty("quarkus.otel.resource.attributes", "custom_attribute=" + CUSTOM_ATTRIBUTE_VALUE)
             .withProperty("quarkus.otel.blrp.schedule.delay", "PT5S")
+            .withProperty("quarkus.otel.blrp.export.timeout", "PT5S")
             .withProperty("quarkus.otel.blrp.max.export.batch.size", BULK_SIZE.toString())
             .withProperty("quarkus.otel.exporter.otlp.logs.endpoint", grafana::getOtlpCollectorUrl);
 
