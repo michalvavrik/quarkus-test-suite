@@ -39,7 +39,8 @@ public class OpenTelemetryLoggingIT {
     @QuarkusApplication
     static final RestService app = new RestService()
             .withProperty("quarkus.otel.logs.enabled", "true")
-            .withProperty("quarkus.log.level", "DEBUG")
+            .withProperty("quarkus.log.level", "TRACE")
+            .withProperty("quarkus.log.min-level", "TRACE")
             .withProperty("quarkus.application.name", SERVICE_NAME)
             .withProperty("quarkus.otel.resource.attributes", "custom_attribute=" + CUSTOM_ATTRIBUTE_VALUE)
             .withProperty("quarkus.otel.exporter.otlp.logs.timeout", "PT50S")
@@ -109,11 +110,7 @@ public class OpenTelemetryLoggingIT {
         await().atMost(isWinOs ? 57 : 7, TimeUnit.SECONDS).untilAsserted(() -> {
             assertEquals(initLogLines + 2, getWarningLogCount(SERVICE_NAME),
                     () -> "Lines should arrive within sending interval, log response was "
-                            + given().when()
-                                    .queryParam("query", "{service_name=\"" + SERVICE_NAME + "\"}")
-                                    .queryParam("limit", 500)
-                                    .get(grafana.getRestUrl() + "/loki/api/v1/query_range")
-                                    .asPrettyString());
+                            + retrieveWarnings(SERVICE_NAME).asPrettyString());
         });
 
         // generate more lines that fit more than one bulk
@@ -129,11 +126,7 @@ public class OpenTelemetryLoggingIT {
             assertTrue(actualNumOfLogLines >= expectedNumOfLogLines,
                     () -> "Bulk of log lines should arrive sooner, actual number of lines "
                             + actualNumOfLogLines + " should be greater or equal then " + expectedNumOfLogLines
-                            + "; log response was: " + given().when()
-                                    .queryParam("query", "{service_name=\"" + SERVICE_NAME + "\"}")
-                                    .queryParam("limit", 500)
-                                    .get(grafana.getRestUrl() + "/loki/api/v1/query_range")
-                                    .asPrettyString());
+                            + "; log response was: " + retrieveWarnings(SERVICE_NAME).asPrettyString());
         });
 
         // all messages should arrive in at most one sending period
