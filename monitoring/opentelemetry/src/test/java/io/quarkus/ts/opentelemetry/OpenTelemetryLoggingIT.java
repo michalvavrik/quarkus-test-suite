@@ -20,6 +20,7 @@ import org.junit.jupiter.api.condition.OS;
 
 import io.quarkus.test.bootstrap.GrafanaService;
 import io.quarkus.test.bootstrap.RestService;
+import io.quarkus.test.logging.Log;
 import io.quarkus.test.scenarios.QuarkusScenario;
 import io.quarkus.test.services.GrafanaContainer;
 import io.quarkus.test.services.QuarkusApplication;
@@ -141,6 +142,7 @@ public class OpenTelemetryLoggingIT {
         Response logsResponse = retrieveWarnings(serviceName);
         assertEquals("success", logsResponse.jsonPath().getString("status"),
                 "Should succeed when getting the logs from server");
+        Log.error("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW logs response is " + logsResponse.asPrettyString());
         List<LogEntry> parsedLogs = parseJsonLogs(logsResponse.jsonPath().getJsonObject("data.result"));
         return parsedLogs.size();
     }
