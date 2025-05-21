@@ -17,6 +17,7 @@ import jakarta.ws.rs.core.Response;
 
 import io.quarkus.hibernate.reactive.panache.Panache;
 import io.quarkus.hibernate.reactive.panache.common.WithSession;
+import io.quarkus.logging.Log;
 import io.quarkus.ts.hibernate.reactive.database.Author;
 import io.quarkus.ts.hibernate.reactive.database.AuthorRepository;
 import io.quarkus.ts.hibernate.reactive.database.Book;
@@ -125,7 +126,10 @@ public class PanacheEndpoint {
         return authors.create(name)
                 .map(ignored -> Response.status(Response.Status.CREATED))
                 .onFailure()
-                .recoverWithItem(throwable -> Response.status(Response.Status.BAD_REQUEST).entity(throwable.getMessage()))
+                .recoverWithItem(throwable -> {
+                    Log.info("CREATE AUTHOR THROWABLE IIISSS ", throwable);
+                    return Response.status(Response.Status.BAD_REQUEST).entity(throwable.getMessage());
+                })
                 .map(Response.ResponseBuilder::build);
     }
 
