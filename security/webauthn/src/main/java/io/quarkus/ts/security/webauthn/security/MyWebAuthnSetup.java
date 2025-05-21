@@ -21,7 +21,9 @@ public class MyWebAuthnSetup implements WebAuthnUserProvider {
     @Override
     public Uni<List<WebAuthnCredentialRecord>> findByUsername(String username) {
         return WebAuthnCredential.findByUsername(username)
-                .map(list -> list.stream().map(WebAuthnCredential::toWebAuthnCredentialRecord).toList());
+                .onFailure().invoke(t -> System.out.println("msg iiiiiisssssssssss " + t.getMessage() + " and " + t))
+                .map(list -> list.stream()
+                        .map(WebAuthnCredential::toWebAuthnCredentialRecord).toList());
     }
 
     @WithTransaction
