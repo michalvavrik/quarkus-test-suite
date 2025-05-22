@@ -39,28 +39,8 @@ public class VertxMySqlFipsReroducer {
         app.given()
                 .log().all()
                 .filter(new ResponseLoggingFilter())
-                .get("/repro")
+                .get("repro")
                 .then()
                 .statusCode(200);
-    }
-
-    @Path("repro")
-    public static class ReproResource {
-
-        @Inject
-        Pool pool;
-
-        @GET
-        public Uni<String> queryUsingMysqlClient() {
-            return Uni.createFrom().completionStage(
-                            pool
-                                    .query("SELECT * FROM authors")
-                                    .execute()
-                                    .toCompletionStage())
-                    .map(Object::toString)
-                    .invoke(s -> System.out.println("////// row set is " + s))
-                    .onFailure().invoke(t -> System.out.println("///////// failure is " + t));
-        }
-
     }
 }
