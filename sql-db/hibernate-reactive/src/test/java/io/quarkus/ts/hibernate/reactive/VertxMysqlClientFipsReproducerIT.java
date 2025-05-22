@@ -1,10 +1,5 @@
 package io.quarkus.ts.hibernate.reactive;
 
-import io.smallrye.mutiny.Uni;
-import io.vertx.sqlclient.Pool;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.bootstrap.MySqlService;
@@ -15,7 +10,7 @@ import io.quarkus.test.services.QuarkusApplication;
 import io.restassured.filter.log.ResponseLoggingFilter;
 
 @QuarkusScenario
-public class VertxMySqlFipsReroducer {
+public class VertxMysqlClientFipsReproducerIT {
 
     private static final String MYSQL_USER = "quarkus_test";
     private static final String MYSQL_PASSWORD = "quarkus_test";
