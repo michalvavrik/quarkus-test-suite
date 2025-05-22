@@ -29,7 +29,7 @@ public class VertxMySqlFipsReroducer {
             .withDatabase(MYSQL_DATABASE);
 
     @QuarkusApplication(classes = ReproResource.class)
-    static RestService app = new RestService().withProperties("mysql.properties")
+    static RestService app = new RestService()
             .withProperty("quarkus.datasource.username", MYSQL_USER)
             .withProperty("quarkus.datasource.password", MYSQL_PASSWORD)
             .withProperty("quarkus.datasource.reactive.url", database::getReactiveUrl);

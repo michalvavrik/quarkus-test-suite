@@ -16,7 +16,7 @@ public class ReproResource {
     public Uni<String> queryUsingMysqlClient() {
         return Uni.createFrom().completionStage(
                         pool
-                                .query("SELECT * FROM authors")
+                                .query("SELECT * FROM unknown")
                                 .execute()
                                 .toCompletionStage())
                 .map(Object::toString)
