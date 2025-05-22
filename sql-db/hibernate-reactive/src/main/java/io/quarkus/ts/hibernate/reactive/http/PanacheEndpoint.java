@@ -22,6 +22,7 @@ import io.quarkus.ts.hibernate.reactive.database.Author;
 import io.quarkus.ts.hibernate.reactive.database.AuthorRepository;
 import io.quarkus.ts.hibernate.reactive.database.Book;
 import io.smallrye.mutiny.Uni;
+import io.vertx.sqlclient.Pool;
 
 @Path("/library")
 @Produces(MediaType.APPLICATION_JSON)
@@ -30,6 +31,22 @@ public class PanacheEndpoint {
 
     @Inject
     AuthorRepository authors;
+
+    @Inject
+    Pool pool;
+
+    @GET
+    @Path("mysql-client")
+    public Uni<String> queryUsingMysqlClient() {
+        return Uni.createFrom().completionStage(
+                pool
+                        .query("SELECT * FROM authors")
+                        .execute()
+                        .toCompletionStage())
+                .map(Object::toString)
+                .invoke(s -> System.out.println("////// row set is " + s))
+                .onFailure().invoke(t -> System.out.println("///////// failure is " + t));
+    }
 
     @WithSession
     @GET
