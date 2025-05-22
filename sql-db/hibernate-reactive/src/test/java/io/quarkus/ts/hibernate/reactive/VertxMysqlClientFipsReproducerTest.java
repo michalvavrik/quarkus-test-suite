@@ -1,52 +1,40 @@
 package io.quarkus.ts.hibernate.reactive;
 
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.runtime.StartupEvent;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
-import io.restassured.RestAssured;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import io.vertx.ext.web.Router;
 import io.vertx.sqlclient.Pool;
 
 @TestProfile(VertxMysqlClientFipsReproducerTest.MyTestProfile.class)
 @QuarkusTest
 public class VertxMysqlClientFipsReproducerTest {
 
+    @Inject
+    Pool pool;
+
     @Test
-    public void reproducer() {
-        RestAssured
-                .given()
-                .log().all()
-                .filter(new ResponseLoggingFilter())
-                .get("repro")
-                .then()
-                .statusCode(200);
-    }
-
-    public static class ReproResource {
-
-        void observe(@Observes StartupEvent event, Pool pool, Router router) {
-            router.route("/repro").handler(context -> pool
-                    .query("CREATE TABLE authors (id INT NOT NULL AUTO_INCREMENT, name VARCHAR(31) NOT NULL, PRIMARY KEY(id))")
-                    .execute()
-                    .onComplete(result -> {
-                        if (result.failed()) {
-                            System.out.println("failed with: " + result.cause());
-                            result.cause().printStackTrace();
-                            context.fail(result.cause());
-                        } else {
-                            context.response().setStatusCode(200).end("Repro result: " + result.result());
-                        }
-                    }));
-        }
-
+    public void reproducer() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        pool
+                .query("CREATE TABLE authors (id INT NOT NULL AUTO_INCREMENT, name VARCHAR(31) NOT NULL, PRIMARY KEY(id))")
+                .execute()
+                .onComplete(result -> {
+                    if (result.failed()) {
+                        Assertions.fail(result.cause());
+                    } else {
+                        latch.countDown();
+                    }
+                });
+        latch.await(1, TimeUnit.MINUTES);
     }
 
     public static class MyTestProfile implements QuarkusTestProfile {
