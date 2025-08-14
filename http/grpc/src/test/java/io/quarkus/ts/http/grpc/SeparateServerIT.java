@@ -7,7 +7,7 @@ import io.quarkus.test.services.QuarkusApplication;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
 @QuarkusScenario
-public class SeparateServerIT implements GRPCIT, StreamingHttpIT, ReflectionHttpIT {
+public class SeparateServerIT implements GRPCIT, StreamingHttpIT, ReflectionHttpIT, SeparateServerCustomizationIT {
 
     private static WebClient webClient = null;
 

@@ -17,7 +17,7 @@ import io.vertx.mutiny.ext.web.client.WebClient;
 
 @Tag("QUARKUS-4592")
 @QuarkusScenario
-public class GrpcMutualTlsSeparateServerIT implements GRPCIT, StreamingHttpIT, ReflectionHttpIT {
+public class GrpcMutualTlsSeparateServerIT implements GRPCIT, StreamingHttpIT, ReflectionHttpIT, SeparateServerCustomizationIT {
 
     private static final String CERT_PREFIX = "grpc-mtls-separate-server";
     private static final String CLIENT_CN_NAME = "mtls-client-name";

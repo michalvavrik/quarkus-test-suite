@@ -13,7 +13,7 @@ import io.quarkus.test.services.QuarkusApplication;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
 @QuarkusScenario
-public class GrpcTlsSeparateServerIT implements GRPCIT, StreamingHttpIT, ReflectionHttpIT {
+public class GrpcTlsSeparateServerIT implements GRPCIT, StreamingHttpIT, ReflectionHttpIT, SeparateServerCustomizationIT {
 
     private static final String CERT_PREFIX = "grpc-tls-separate-server";
     private static WebClient webClient = null;
