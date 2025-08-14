@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.quarkus.ts.grpc.metadata";
+option java_outer_classname = "MetadataOuterClass";
+
+package metadata;
+
+service Metadata {
+  rpc GetMetadata (MetadataRequest) returns (MetadataReply) {}
+}
+
+message MetadataRequest {
+  string name = 1;
+}
+
+message MetadataReply {
+  string name = 1;
+  string intercepted_first = 2;
+  string intercepted_second = 3;
+  string intercepted_third = 4;
+}
