@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.bootstrap.LookupService;
 import io.quarkus.test.bootstrap.RestService;
+import io.quarkus.test.logging.Log;
 import io.quarkus.test.scenarios.annotations.DisabledOnNative;
 import io.quarkus.test.utils.AwaitilityUtils;
 import io.restassured.RestAssured;
@@ -198,6 +199,9 @@ public abstract class AbstractMicrometerOpenTelemetryBridgeIT {
         // a global metric
         AwaitilityUtils.untilAsserted(() -> queryPrometheusAndWaitForMetrics("http_server_bytes_read_count")
                 .body("data.result.value.flatten()", hasItems("1")));
+
+        body = queryPrometheusAndWaitForMetrics("{__name__=~\".+\"}").extract().body().asPrettyString();
+        Log.info("All metrics ATM are: " + body);
     }
 
     @Test
