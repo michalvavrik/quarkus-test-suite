@@ -47,7 +47,9 @@ public final class CrashingXADataSource implements XADataSource {
             POSTGRESQL, PGXADataSource::new,
             ORACLE, () -> {
                 try {
-                    return new OracleXADataSource();
+                    var ds = new OracleXADataSource();
+                    ds.setConnectionProperty("oracle.jdbc.enableACSupport", "false");
+                    return ds;
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -57,6 +59,7 @@ public final class CrashingXADataSource implements XADataSource {
             MYSQL, MysqlXADataSource::new);
 
     private final XADataSource delegate;
+    private final boolean isOracle;
     private String user;
     private String password;
     private String URL;
@@ -76,6 +79,7 @@ public final class CrashingXADataSource implements XADataSource {
 
         // create actual XA datasource
         delegate = dbKindToDelegateSupplier.get(dbKind).get();
+        isOracle = dbKind.equals(ORACLE);
     }
 
     @Override
@@ -85,7 +89,7 @@ public final class CrashingXADataSource implements XADataSource {
 
     @Override
     public XAConnection getXAConnection(String user, String password) throws SQLException {
-        return new CrashingXAConnection(delegate.getXAConnection(user, password));
+        return new CrashingXAConnection(delegate.getXAConnection(user, password), isOracle);
     }
 
     @Override

@@ -17,9 +17,11 @@ public class CrashingXAResource implements XAResource {
     private static final Logger LOG = Logger.getLogger(CrashingXAResource.class);
     private volatile InstanceHandle<RoutingContext> routingContextInstanceHandle = null;
     private final XAResource delegate;
+    private final boolean isOracle;
 
-    public CrashingXAResource(XAResource delegate) {
+    public CrashingXAResource(XAResource delegate, boolean isOracle) {
         this.delegate = delegate;
+        this.isOracle = isOracle;
     }
 
     private RoutingContext getRoutingContext() {
