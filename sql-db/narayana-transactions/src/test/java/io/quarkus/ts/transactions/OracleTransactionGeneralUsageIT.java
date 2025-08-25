@@ -13,17 +13,28 @@ import io.quarkus.ts.transactions.recovery.TransactionExecutor;
 @DisabledIfSystemProperty(named = "ts.arm.missing.services.excludes", matches = "true", disabledReason = "https://github.com/quarkus-qe/quarkus-test-suite/issues/2022")
 public class OracleTransactionGeneralUsageIT extends TransactionCommons {
 
-    static final int ORACLE_PORT = 1521;
+    private static final int ORACLE_PORT = 1521;
+    private static final String DATABASE = "mydb";
+    private static final String SEPARATOR = ",";
+    private static final String DATABASES = DATABASE + SEPARATOR + DATABASE + 2;
 
     @Container(image = "${oracle.image}", port = ORACLE_PORT, expectedLog = "DATABASE IS READY TO USE!")
-    static OracleService database = new OracleService();
+    static OracleService database = new OracleService().withDatabase(DATABASES);
 
     @QuarkusApplication
     static RestService app = new RestService().withProperties("oracle.properties")
             .withProperty("quarkus.otel.exporter.otlp.traces.endpoint", jaeger::getCollectorUrl)
             .withProperty("quarkus.datasource.username", database.getUser())
             .withProperty("quarkus.datasource.password", database.getPassword())
-            .withProperty("quarkus.datasource.jdbc.url", database::getJdbcUrl);
+            .withProperty("quarkus.datasource.jdbc.url", () -> {
+                // now that both databases are created, get the JDBC URL for the first database
+                // TODO: add 'getJdbcUrl(String databaseName)' method to the framework
+                final String originalValue = database.getDatabase();
+                database.withDatabase(DATABASE);
+                final String jdbcUrl = database.getJdbcUrl();
+                database.withDatabase(originalValue);
+                return jdbcUrl;
+            });
 
     @Override
     protected RestService getApp() {
@@ -41,9 +52,4 @@ public class OracleTransactionGeneralUsageIT extends TransactionCommons {
                 new Operation("UPDATE mydb.account") };
     }
 
-    @Override
-    protected void testTransactionRecoveryInternal() {
-        // disables transaction recovery test for Oracle due to upstream issue
-        // TODO: remove this method when https://github.com/quarkusio/quarkus/issues/35333 gets fixed
-    }
 }
