@@ -63,7 +63,25 @@ public class TransactionLogsResource {
     @Transactional
     @GET
     public int jdbcObjectStoreCount() {
-        return executeCountQuery("quarkus_qe_JBossTSTxTable");
+        return executeCountQuery("QUARKUS_QE_JBOSSTSTXTABLE");
+    }
+
+    @Path("/list-tables")
+    @Transactional
+    @GET
+    public String listTables() {
+        try (var con = dataSource.getConnection()) {
+            try (var st = con.createStatement()) {
+                var res = st.executeQuery("SELECT table_name FROM user_tables");
+                StringBuilder tables = new StringBuilder();
+                while (res.next()) {
+                    tables.append(res.getString(1)).append(", ");
+                }
+                return tables.toString();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Transactional
@@ -86,6 +104,7 @@ public class TransactionLogsResource {
                 if (res.next()) {
                     return res.getInt(1);
                 }
+                System.out.println("////////////////////////////////////// NO ROWS RETURNED!!!!!!!!!!!");
                 return 0;
             }
         } catch (SQLException e) {

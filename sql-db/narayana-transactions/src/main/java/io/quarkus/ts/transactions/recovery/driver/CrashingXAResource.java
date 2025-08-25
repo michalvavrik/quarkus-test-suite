@@ -17,9 +17,11 @@ public class CrashingXAResource implements XAResource {
     private static final Logger LOG = Logger.getLogger(CrashingXAResource.class);
     private volatile InstanceHandle<RoutingContext> routingContextInstanceHandle = null;
     private final XAResource delegate;
+    private final boolean isOracle;
 
-    public CrashingXAResource(XAResource delegate) {
+    public CrashingXAResource(XAResource delegate, boolean isOracle) {
         this.delegate = delegate;
+        this.isOracle = isOracle;
     }
 
     private RoutingContext getRoutingContext() {
@@ -46,7 +48,7 @@ public class CrashingXAResource implements XAResource {
     @Override
     public void commit(Xid xid, boolean onePhase) throws XAException {
         if (shouldCrash()) {
-            LOG.info("Crashing the system");
+            LOG.info(onePhase + " Crashing the system " + delegate.prepare(xid));
             Runtime.getRuntime().halt(1);
         }
         delegate.commit(xid, onePhase);
@@ -69,11 +71,19 @@ public class CrashingXAResource implements XAResource {
 
     @Override
     public boolean isSameRM(XAResource xares) throws XAException {
+        if (isOracle) {
+            return false;
+        }
         return delegate.isSameRM(xares);
     }
 
     @Override
     public int prepare(Xid xid) throws XAException {
+        if (isOracle && shouldCrash()) {
+            // Force this to look like a different resource manager
+            // This ensures Narayana cannot optimize to 1PC
+            return XAResource.XA_OK; // NEVER return XA_RDONLY
+        }
         return delegate.prepare(xid);
     }
 

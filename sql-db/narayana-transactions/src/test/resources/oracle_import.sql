@@ -8,4 +8,4 @@ INSERT INTO account (id, name, lastName, accountNumber, amount, updatedAt, creat
 INSERT INTO client (id, name, lastName, account_number) VALUES (100, 'Francisco', 'Quevedo', 'ES8521006742088984966817');
 INSERT INTO client (id, name, lastName, account_number) VALUES (101, 'Eduardo', 'Mendoza', 'ES8521006742088984966899');
 
-CREATE TABLE IF NOT EXISTS recovery_log (id INT);
+CREATE TABLE IF NOT EXISTS recovery_log (id INT, neco INT);

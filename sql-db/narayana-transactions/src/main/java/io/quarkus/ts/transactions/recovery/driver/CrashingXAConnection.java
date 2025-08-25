@@ -11,14 +11,16 @@ import javax.transaction.xa.XAResource;
 public class CrashingXAConnection implements XAConnection {
 
     private final XAConnection delegate;
+    private final boolean isOracle;
 
-    CrashingXAConnection(XAConnection delegate) {
+    CrashingXAConnection(XAConnection delegate, boolean isOracle) {
         this.delegate = delegate;
+        this.isOracle = isOracle;
     }
 
     @Override
     public XAResource getXAResource() throws SQLException {
-        return new CrashingXAResource(delegate.getXAResource());
+        return new CrashingXAResource(delegate.getXAResource(), isOracle);
     }
 
     @Override
