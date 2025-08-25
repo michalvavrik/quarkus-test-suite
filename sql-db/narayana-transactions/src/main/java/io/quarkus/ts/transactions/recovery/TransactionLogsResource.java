@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -21,6 +24,7 @@ import jakarta.ws.rs.core.MediaType;
 import org.jboss.resteasy.reactive.RestQuery;
 
 import io.quarkus.arc.All;
+import io.quarkus.runtime.StartupEvent;
 
 import javax.sql.DataSource;
 
@@ -28,6 +32,10 @@ import javax.sql.DataSource;
 @Produces(MediaType.APPLICATION_JSON)
 @Path(TRANSACTION_LOGS_PATH)
 public class TransactionLogsResource {
+
+    @Named("xa-ds-2")
+    @Inject
+    DataSource xaDataSource2;
 
     private final DataSource dataSource;
     private final EnumMap<TransactionExecutor, TransactionRecoveryService> typeToSvc;
@@ -56,7 +64,7 @@ public class TransactionLogsResource {
     @Transactional
     @GET
     public int transactionCount() {
-        return executeCountQuery("recovery_log");
+        return executeCountQuery("recovery_log") + executeCountQuery("recovery_log", xaDataSource2);
     }
 
     @Path("/jdbc-object-store")
@@ -70,6 +78,11 @@ public class TransactionLogsResource {
     @DELETE
     public void deleteRecoveryLog() {
         // all transactions write into 'recovery_log' table
+        deleteRecoveryLog(dataSource);
+        deleteRecoveryLog(xaDataSource2);
+    }
+
+    private static void deleteRecoveryLog(DataSource dataSource) {
         try (var con = dataSource.getConnection()) {
             try (var st = con.createStatement()) {
                 st.executeUpdate("DELETE FROM recovery_log");
@@ -80,6 +93,10 @@ public class TransactionLogsResource {
     }
 
     private int executeCountQuery(String tableName) {
+        return executeCountQuery(tableName, dataSource);
+    }
+
+    private static int executeCountQuery(String tableName, DataSource dataSource) {
         try (var con = dataSource.getConnection()) {
             try (var st = con.createStatement()) {
                 var res = st.executeQuery("SELECT COUNT(*) FROM " + tableName);
@@ -87,6 +104,34 @@ public class TransactionLogsResource {
                     return res.getInt(1);
                 }
                 return 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Path("/list-tables")
+    @Transactional
+    @GET
+    public String listTables() {
+        try (var con = xaDataSource2.getConnection()) {
+            try (var st = con.createStatement()) {
+                var res = st.executeQuery("SELECT table_name FROM user_tables");
+                StringBuilder tables = new StringBuilder();
+                while (res.next()) {
+                    tables.append(res.getString(1)).append(", ");
+                }
+                return tables.toString();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    void todo(@Observes StartupEvent event) {
+        try (var con = xaDataSource2.getConnection()) {
+            try (var statement = con.createStatement()) {
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS recovery_log (id INT)");
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
