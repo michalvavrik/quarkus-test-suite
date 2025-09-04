@@ -1,5 +1,7 @@
 package io.quarkus.ts.transactions;
 
+import org.junit.jupiter.api.Tag;
+
 import io.quarkus.test.bootstrap.MariaDbService;
 import io.quarkus.test.bootstrap.RestService;
 import io.quarkus.test.scenarios.QuarkusScenario;
@@ -10,6 +12,7 @@ import io.quarkus.ts.transactions.recovery.TransactionExecutor;
 @QuarkusScenario
 public class MariaDbTransactionGeneralUsageIT extends TransactionCommons {
 
+    private static final String DATASOURCE_JDBC_ENABLE_RECOVERY = "quarkus.datasource.jdbc.enable-recovery";
     static final int MARIADB_PORT = 3306;
 
     @Container(image = "${mariadb.11.image}", port = MARIADB_PORT, expectedLog = "socket: '.*/mysql.*sock'  port: "
@@ -33,4 +36,15 @@ public class MariaDbTransactionGeneralUsageIT extends TransactionCommons {
         return TransactionExecutor.QUARKUS_TRANSACTION;
     }
 
+    @Tag("QUARKUS-5709")
+    @Override
+    protected void enableTransactionRecovery() {
+        app.withProperty(DATASOURCE_JDBC_ENABLE_RECOVERY, Boolean.TRUE.toString());
+    }
+
+    @Tag("QUARKUS-5709")
+    @Override
+    protected void disableTransactionRecovery() {
+        app.withProperty(DATASOURCE_JDBC_ENABLE_RECOVERY, Boolean.FALSE.toString());
+    }
 }
