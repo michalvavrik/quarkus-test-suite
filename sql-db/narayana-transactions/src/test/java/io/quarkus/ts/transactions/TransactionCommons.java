@@ -28,7 +28,9 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import io.quarkus.test.bootstrap.DatabaseService;
 import io.quarkus.test.bootstrap.JaegerService;
+import io.quarkus.test.bootstrap.LookupService;
 import io.quarkus.test.bootstrap.RestService;
 import io.quarkus.test.services.JaegerContainer;
 import io.quarkus.ts.transactions.recovery.TransactionExecutor;
@@ -56,6 +58,9 @@ public abstract class TransactionCommons {
 
     @JaegerContainer(expectedLog = "\"Health Check state change\",\"status\":\"ready\"")
     static final JaegerService jaeger = new JaegerService();
+
+    @LookupService
+    static DatabaseService<?> database;
 
     protected abstract RestService getApp();
 
@@ -322,6 +327,14 @@ public abstract class TransactionCommons {
         var response = getClient(ACCOUNT_NUMBER_FRANCISCO);
         response.then().statusCode(HttpStatus.SC_OK)
                 .body(containsString(ACCOUNT_NUMBER_FRANCISCO), containsString("Francisco"));
+    }
+
+    @Order(12)
+    @Test
+    public void testConnectionValidationQueryTimeout() {
+        System.out.println("////////////////////////// LLLLLLLLAAAAAAAAAST 1");
+        database.stop();
+        System.out.println("////////////////////////// LLLLLLLLAAAAAAAAAST 2");
     }
 
     protected void testTransactionRecoveryInternal() {

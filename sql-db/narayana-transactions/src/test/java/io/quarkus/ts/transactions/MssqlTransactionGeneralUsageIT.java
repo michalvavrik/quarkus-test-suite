@@ -9,6 +9,7 @@ import java.time.temporal.ChronoUnit;
 import org.apache.http.HttpStatus;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
@@ -75,6 +76,7 @@ public class MssqlTransactionGeneralUsageIT extends TransactionCommons {
                 new Operation(actualOperationName -> actualOperationName.startsWith("UPDATE msdb.")) };
     }
 
+    @Order(0) // run before parent tests so that the parent test can stop database
     @Test
     @Tag("long-running")
     @Tag("QUARKUS-4185")
@@ -87,7 +89,6 @@ public class MssqlTransactionGeneralUsageIT extends TransactionCommons {
         int after = getConnections();
         Assertions.assertFalse(after - before > 1, //single additional connection may be open temporary
                 "Connections are leaking, was: " + before + " now: " + after);
-
     }
 
     private int getConnections() {
