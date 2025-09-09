@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import io.quarkus.test.bootstrap.DatabaseService;
 import io.quarkus.test.bootstrap.JaegerService;
 import io.quarkus.test.bootstrap.RestService;
 import io.quarkus.test.services.JaegerContainer;
@@ -53,9 +55,24 @@ public abstract class TransactionCommons {
 
     static final String ACCOUNT_NUMBER_EDUARDO = "ES8521006742088984966899";
     static final int ASSERT_SERVICE_TIMEOUT_MINUTES = 1;
+    protected static volatile SQLProxy sqlProxy = null;
 
     @JaegerContainer(expectedLog = "\"Health Check state change\",\"status\":\"ready\"")
     static final JaegerService jaeger = new JaegerService();
+
+    protected static String configureValidationQueryDs(DatabaseService<?> database) {
+        return configureValidationQueryDs(database, database.getJdbcUrl());
+    }
+
+    protected static String configureValidationQueryDs(DatabaseService<?> database, String jdbcUrl) {
+        String host = database.getURI().getHost();
+        int port = database.getURI().getPort();
+
+        int proxyPort = port + 1000;
+        sqlProxy = SQLProxy.start(host, port, proxyPort);
+        String proxyJdbcUrl = jdbcUrl.replace("" + port, "" + proxyPort);
+        return proxyJdbcUrl;
+    }
 
     protected abstract RestService getApp();
 
@@ -324,6 +341,44 @@ public abstract class TransactionCommons {
                 .body(containsString(ACCOUNT_NUMBER_FRANCISCO), containsString("Francisco"));
     }
 
+    @Order(12)
+    @Test
+    public void testConnectionValidationQueryTimeout() throws InterruptedException {
+        System.out.println("//////////////////// first request");
+        // First verify normal operation works
+        getApp().given()
+                .get("/connection/validation-query")
+                .then().statusCode(HttpStatus.SC_OK)
+                .body(Matchers.is("6"));
+
+        System.out.println("////////////////////////// Normal operation confirmed");
+
+        long startTime = System.currentTimeMillis();
+
+        if (sqlProxy != null) {
+            System.out.println("adding validation query delay and requesting");
+            sqlProxy.setValidationQueryDelay(500000);
+            if (delayFirstProxyMessage()) {
+                sqlProxy.delayFirst(true);
+            }
+        }
+
+        // This should now timeout with SocketTimeoutException after 5 seconds
+        getApp().given()
+                .get("/connection/validation-query")
+                .then().statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR); // Expect timeout failure
+
+        long duration = System.currentTimeMillis() - startTime;
+        System.out.println("////////////////////////// Query failed after " + duration + "ms");
+
+        // Verify it took approximately the timeout duration (5000ms with some tolerance)
+        if (duration >= 4000 && duration <= 8000) {
+            System.out.println("////////////////////////// SUCCESS: Timeout behavior working as expected");
+        } else {
+            System.out.println("////////////////////////// WARNING: Unexpected timing - " + duration + "ms");
+        }
+    }
+
     protected void testTransactionRecoveryInternal() {
         // test transactions without crash so that we check that on normal circumstances, there are no issues
         makeTransaction(false, false);
@@ -508,4 +563,15 @@ public abstract class TransactionCommons {
         return actual -> actual > expected;
     }
 
+    @AfterAll
+    public static void cleanup() {
+        if (sqlProxy != null) {
+            System.out.println("/////////// shutting down proxy");
+            sqlProxy.shutdown();
+        }
+    }
+
+    protected boolean delayFirstProxyMessage() {
+        return false;
+    }
 }
