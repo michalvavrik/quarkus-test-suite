@@ -21,6 +21,7 @@ import io.quarkus.test.bootstrap.Protocol;
 import io.quarkus.test.bootstrap.RestService;
 import io.quarkus.test.scenarios.QuarkusScenario;
 import io.quarkus.test.services.DevModeQuarkusApplication;
+import io.quarkus.test.utils.AwaitilityUtils;
 import io.quarkus.test.utils.FileUtils;
 import io.restassured.response.Response;
 
@@ -77,11 +78,14 @@ public class DevModeWorkspaceIT {
                 ElementHandle save = page.waitForSelector(".mainMenuBarButtons > vaadin-button:nth-child(1)");
                 save.click();
 
-                Path file = app.getServiceFolder()
-                        .resolve(Path.of("src", "main", "java", "io", "quarkus", "ts", "http", "advanced",
-                                "PathSpecificHeadersResource.java"));
-                String content = FileUtils.loadFile(file.toFile());
-                Assertions.assertTrue(content.contains("@Path(\"/this\")"), file + " wasn't edited: " + code);
+                final String finalCode = code;
+                AwaitilityUtils.untilAsserted(() -> {
+                    Path file = app.getServiceFolder()
+                            .resolve(Path.of("src", "main", "java", "io", "quarkus", "ts", "http", "advanced",
+                                    "PathSpecificHeadersResource.java"));
+                    String content = FileUtils.loadFile(file.toFile());
+                    Assertions.assertTrue(content.contains("@Path(\"/this\")"), file + " wasn't edited: " + finalCode);
+                });
 
                 // Sometimes the app returns the old results, so let's refresh the page
                 page.reload();
