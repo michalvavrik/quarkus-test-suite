@@ -1,5 +1,7 @@
 package io.quarkus.ts.http.advanced;
 
+import static io.quarkus.test.utils.AwaitilityUtils.AwaitilitySettings.usingTimeout;
+import static java.time.Duration.ofSeconds;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 
@@ -78,14 +80,14 @@ public class DevModeWorkspaceIT {
                 ElementHandle save = page.waitForSelector(".mainMenuBarButtons > vaadin-button:nth-child(1)");
                 save.click();
 
-                final String finalCode = code;
                 AwaitilityUtils.untilAsserted(() -> {
                     Path file = app.getServiceFolder()
                             .resolve(Path.of("src", "main", "java", "io", "quarkus", "ts", "http", "advanced",
                                     "PathSpecificHeadersResource.java"));
                     String content = FileUtils.loadFile(file.toFile());
-                    Assertions.assertTrue(content.contains("@Path(\"/this\")"), file + " wasn't edited: " + finalCode);
-                });
+                    Assertions.assertTrue(content.contains("@Path(\"/this\")"),
+                            file + " wasn't edited: " + System.lineSeparator() + content);
+                }, usingTimeout(ofSeconds(5)));
 
                 // Sometimes the app returns the old results, so let's refresh the page
                 page.reload();
