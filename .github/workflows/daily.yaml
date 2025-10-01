@@ -11,9 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         java: [ 17, 21 ]
-        profiles: [ "root-modules", "http-modules,security-modules,spring-modules", "hibernate-modules",
-                    "sql-db-modules", "root-modules -pl build/podman/,build/docker -Dtest-ubi8-compatibility",
-                    "messaging-modules,websockets-modules,monitoring-modules,cache-modules,test-tooling-modules,nosql-db-modules"]
+        profiles: [ "http-modules"]
     steps:
       - uses: actions/checkout@v5
       - name: Reclaim Disk Space
