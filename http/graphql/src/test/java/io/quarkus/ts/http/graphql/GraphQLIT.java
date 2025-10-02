@@ -10,6 +10,8 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import io.quarkus.test.scenarios.QuarkusScenario;
 import io.restassured.path.json.JsonPath;
@@ -138,6 +140,77 @@ public class GraphQLIT {
     @Tag("QUARKUS-2485")
     public void error() {
         final String query = createQuery("error");
+        final Response response = sendQuery(query);
+        final JsonPath json = response.jsonPath();
+        Assertions.assertEquals("42", json.getString("errors[0].extensions.code"));
+    }
+
+    @DisabledForJreRange(max = JRE.JAVA_20, disabledReason = "VTs supported for Java 21+")
+    @Tag("QUARKUS-6521")
+    @Test
+    public void recursive_virtualThread() {
+        final String query = createQuery("philosophers_vt{name,friend{name,friend{name}}}");
+        final Response response = sendQuery(query);
+        final JsonPath json = response.jsonPath();
+        Assertions.assertEquals("Plato", json.getString("data.philosophers_vt[0].name"));
+        Assertions.assertEquals("Aristotle", json.getString("data.philosophers_vt[0].friend.name"));
+        Assertions.assertEquals("Plato", json.getString("data.philosophers_vt[0].friend.friend.name"));
+    }
+
+    @DisabledForJreRange(max = JRE.JAVA_20, disabledReason = "VTs supported for Java 21+")
+    @Tag("QUARKUS-6521")
+    @Test
+    public void single_virtualThread() {
+        final String query = createQuery("friend_vt(name:\"Aristotle\"){name}");
+        final Response response = sendQuery(query);
+        final JsonPath json = response.jsonPath();
+        Assertions.assertEquals("Plato", json.getString("data.friend_vt.name"));
+    }
+
+    @DisabledForJreRange(max = JRE.JAVA_20, disabledReason = "VTs supported for Java 21+")
+    @Tag("QUARKUS-6521")
+    @Test
+    public void create_virtualThread() {
+        final String query = createMutation("create_vt(name:\"Diogen\"){name}");
+        final Response response = sendQuery(query);
+        final JsonPath json = response.jsonPath();
+        Assertions.assertEquals("Diogen", json.getString("data.create_vt.name"));
+    }
+
+    @DisabledForJreRange(max = JRE.JAVA_20, disabledReason = "VTs supported for Java 21+")
+    @Tag("QUARKUS-6521")
+    @Test
+    public void singleGet_virtualThread() {
+        final Response response = sendGetQuery("friend_vt(name:\"Aristotle\"){name}");
+        final JsonPath json = response.jsonPath();
+        Assertions.assertEquals("Plato", json.getString("data.friend_vt.name"));
+    }
+
+    @DisabledForJreRange(max = JRE.JAVA_20, disabledReason = "VTs supported for Java 21+")
+    @Tag("QUARKUS-6521")
+    @Test
+    public void singleScalar_virtualThread() {
+        final String query = createQuery("friend_vt(name:\"Aristotle\"){idol}");
+        final Response response = sendQuery(query);
+        final JsonPath json = response.jsonPath();
+        Assertions.assertEquals("Anaxagoras", json.getString("data.friend_vt.idol"));
+    }
+
+    @DisabledForJreRange(max = JRE.JAVA_20, disabledReason = "VTs supported for Java 21+")
+    @Tag("QUARKUS-6521")
+    @Test
+    public void map_virtualThread() {
+        final String query = createQuery("map_vt(key:PRE_SOCRATIC){value{name}}");
+        final Response response = sendQuery(query);
+        final JsonPath json = response.jsonPath();
+        Assertions.assertEquals("Anaxagoras", json.getString("data.map_vt[0].value.name"));
+    }
+
+    @DisabledForJreRange(max = JRE.JAVA_20, disabledReason = "VTs supported for Java 21+")
+    @Tag("QUARKUS-6521")
+    @Test
+    public void error_virtualThread() {
+        final String query = createQuery("error_vt");
         final Response response = sendQuery(query);
         final JsonPath json = response.jsonPath();
         Assertions.assertEquals("42", json.getString("errors[0].extensions.code"));
