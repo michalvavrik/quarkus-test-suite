@@ -46,10 +46,12 @@ public class DevModeWorkspaceIT {
             try (Browser browser = playwright.firefox().launch()) {
                 Page page = browser.newContext().newPage();
                 page.navigate(pageURL);
-                ElementHandle element = page.waitForSelector("#code");
-                String code = element.getAttribute("value");
-                Assertions.assertTrue(code.startsWith("package io.quarkus.ts.http.advanced;"),
-                        "The code doesn't contain the expected value: " + code);
+                AwaitilityUtils.untilAsserted(() -> {
+                    ElementHandle element = page.waitForSelector("#code");
+                    String code = element.getAttribute("value");
+                    Assertions.assertTrue(code.startsWith("package io.quarkus.ts.http.advanced;"),
+                            "The code doesn't contain the expected value: " + code);
+                }, usingTimeout(ofSeconds(5)));
             }
         }
     }
