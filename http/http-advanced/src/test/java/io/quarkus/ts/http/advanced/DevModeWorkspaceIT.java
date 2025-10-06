@@ -48,6 +48,9 @@ public class DevModeWorkspaceIT {
                 page.navigate(pageURL);
                 ElementHandle element = page.waitForSelector("#code");
                 String code = element.getAttribute("value");
+                Path screenshotPath = Path.of(".").resolve("screenshot").toAbsolutePath().normalize();
+                page.screenshot(new Page.ScreenshotOptions().setPath(screenshotPath));
+                System.out.println("//////// screenshot path is " + screenshotPath);
                 Assertions.assertTrue(code.startsWith("package io.quarkus.ts.http.advanced;"),
                         "The code doesn't contain the expected value: " + code);
             }
