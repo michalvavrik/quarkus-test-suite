@@ -12,8 +12,6 @@ jobs:
         java: [ 17 ]
     steps:
       - uses: actions/checkout@v5
-      - name: Reclaim Disk Space
-        run: .github/ci-prerequisites.sh
       - name: Install JDK {{ matrix.java }}
         # Uses sha for added security since tags can be updated
         uses: actions/setup-java@v5
