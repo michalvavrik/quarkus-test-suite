@@ -10,7 +10,6 @@ jobs:
       fail-fast: false
       matrix:
         java: [ 17 ]
-        module-mvn-args: ${{ fromJSON(needs.prepare-jvm-native-latest-modules-mvn-param.outputs.JVM_MODULES_MAVEN_PARAM) }}
     outputs:
       has-flaky-tests: ${{steps.flaky-test-detector.outputs.has-flaky-tests}}
     steps:
