@@ -1,15 +1,21 @@
 package io.quarkus.ts.messaging.kafka.reactive.streams.shutdown;
 
 import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
 
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.StartupEvent;
+import io.smallrye.common.annotation.Identifier;
 import io.smallrye.reactive.messaging.health.HealthReport;
 import io.smallrye.reactive.messaging.providers.extension.HealthCenter;
 
 public class ReadinessObserver {
 
     private static final int SLEEP_PERIOD = 250;
+
+    @Identifier("slow.rebalancer")
+    @Inject
+    SlowTopicRebalanceListener rebalanceListener;
 
     /**
      * Quarkus starts before channels are ready, but our tests publish messages that need to be delivered.
@@ -25,11 +31,15 @@ public class ReadinessObserver {
             final HealthReport healthReport = healthCenter.getReadiness();
             if (areChannelsReady(healthReport)) {
                 Log.info("Channels 'slow' and 'slow-topic' are ready, proceeding with application startup");
-                return;
+                break;
             }
             Log.infof("Channel 'slow-topic' or 'slow' is not ready. Going to sleep for %d milliseconds", SLEEP_PERIOD);
             Thread.sleep(SLEEP_PERIOD);
         }
+
+        // Wait for partition assignment to complete
+        Log.info("Waiting for Kafka consumer partition assignment");
+        rebalanceListener.awaitPartitionsAssigned();
     }
 
     private static boolean areChannelsReady(HealthReport healthReport) {
